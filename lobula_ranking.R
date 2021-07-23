@@ -30,6 +30,8 @@
 # - project on the perpendicular to the median and do box plots and evaluate
 #   distance between the weighted medians
 # - use these values to create a correlation matrix
+# - Optimize the code. There are a lot of repeated tasks that can be optimized
+#   by creating functions and storing the result in appropriate data structures
 
 # Import required libraries
 library(tidyverse)
@@ -75,9 +77,12 @@ pre_type <- 'LC4'
 # Top (# of synapses) of post to consider
 top <- 20
 
-# Use only anti-parallel?
+# Evaluate best separator using only anti-parallel?
 use_anti <- TRUE
 anti_threshold <- -0.3  # Max threshold allowed in gradient correlation
+
+# Evaluate correlation matrix for all post pairs
+evaluate_all <- TRUE
 
 # Define a plane separating lobula from glomerulus (it will be used to only
 # consider the lobulat in the analysis)
@@ -108,6 +113,9 @@ top_posts <- con %>%
 
 # Extract all pre.type synapses
 pre <- con %>% filter(pre.type==pre_type)
+
+# Evaluate the full combinations
+com_full <- combn(top_posts, 2)
 
 # If only using anti-parallel, extract the info
 if (use_anti == TRUE) {
@@ -149,8 +157,9 @@ if (use_anti == TRUE) {
                      select(row, column)))
 } else {
   # Evaluate all possible combinations without repetition
-  com <- combn(top_posts, 2)
+  com <- com_full
 }
+
 
 
 # Posts ----
@@ -158,8 +167,9 @@ if (use_anti == TRUE) {
 ms <- matrix(nrow=ncol(com), ncol=4)
 
 # For each pair of posts evaluate the centroids of end points and project on
-# the plane, then find the best separating line and use it to evaluate the
-# distance between the weighted median of the weighted centroids distributions.
+# the plane. Find the weighted centroids on the plane and the segment connecting
+# these centroids. Store coordinates of the center of the segment as well and
+# the coefficients of the line containing the segment.
 for (c in 1:ncol(com)) {
 # for (c in 1:1) {
     # Extract names
@@ -321,3 +331,158 @@ per_intr <- -origin[1] * per_coef + origin[2]
 
 # Show the separating line in solid blue
 abline(c(per_intr, per_coef), col='blue')
+
+# Calculate unit vector of projection line
+uv <- c(origin[1], origin[2]) - c(origin[1] + 100, (origin[1] + 100) * med[4] + med[3])
+uv_mod <- sqrt(sum(uv *uv))
+uv_norm <- uv / uv_mod
+
+# Second round of projections ----
+# Create an empty matrix to store the results
+dist_mtrx <- matrix(nrow=top, ncol=top)
+rownames(dist_mtrx) <- c(top_posts)
+colnames(dist_mtrx) <- c(top_posts)
+
+# Reproject the pairs on the median line evaluated above and calculate the
+# distance between the weighted medians.
+# Check if we are using all pairs in the evaluation
+if (evaluate_all == TRUE) {
+  eval_com <- com_full
+} else {
+  eval_com <- com
+}
+
+for (c in 1:ncol(eval_com)) {
+# for (c in 1:1) {
+  # Extract names
+  p1 <- eval_com[1, c]
+  p2 <- eval_com[2, c]
+
+  # Some info for the user
+  cat(paste('Evaluating:', p1, 'vs.', p2, '\n'))
+
+  # Extract bodyIDs of pre synapses with post.type1
+  post1 <- pre %>%
+    filter(post.type==p1) %>%
+    group_by(pre.bodyID) %>%
+    dplyr::count()
+
+  # Extract bodyIDs of pre synapses with post.type2
+  post2 <- pre %>%
+    filter(post.type==p2) %>%
+    group_by(pre.bodyID) %>%
+    dplyr::count()
+
+  # Merge the two posts with the counts and replace NaN with zero
+  post <- merge(post1,
+                post2,
+                by='pre.bodyID',
+                all=TRUE,
+                suffix=c('.post1', '.post2'))
+
+  # Clear potential NaN
+  post[is.na(post)] <- 0
+
+  # Get the neuron list from the posts bodyIDs
+  n_list <- nlist[as.character(post$pre.bodyID)]
+
+  # Select preserved end points for each neuron
+  for (i in 1:length(n_list)) {
+    neu <- n_list[[i]]
+    ep <- neu$d[neu$EndPoints, ]
+    pts <- ep %>%
+      mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+    if (i == 1) {
+      end_pts <- pts
+    } else {
+      end_pts <- rbind(end_pts, pts)
+    }
+  }
+
+  # Project the preserved end points on the plane.
+  end_pts.proj <- plane.proj(end_pts, w_norm, -w0)
+
+  # Find the centroid of the end points
+  center <- colMeans(end_pts.proj)
+
+  # Calculate centroid of lobula end points
+  for (i in 1:length(n_list)) {
+    neu <- n_list[[i]]
+    pts <- neu$d[neu$EndPoints, ] %>%
+      mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z) %>%
+      colMeans()
+    if (i == 1) {
+      ctrs <- pts
+    } else {
+      ctrs <- rbind(ctrs, pts)
+    }
+  }
+
+  # Set the row names to be the body id
+  rownames(ctrs) <- post$pre.bodyID
+
+  # Clear rows with NaN
+  ctrs <- ctrs[!is.na(ctrs[, 1]), ]
+
+  # Project the centroid of the end points on the surface
+  ctrs.proj <- plane.proj(ctrs, w_norm, -w0)
+
+  # Define coordinate system in the plane
+  # Use the projection of the z-axis on the plane to determine one of the new 2D
+  # axes
+  pointY <- c(plane.proj(t(center + c(0, 0, 2000)), w_norm, -w0))
+  pointY <- pointY - center
+  unitY <- - pointY / sqrt(sum(pointY * pointY))
+
+  pointX <- cross(w_norm, pointY)
+  unitX <- - pointX / sqrt(sum(pointX * pointX))
+
+  # Centroids
+  Xcm <- as.matrix(sweep(ctrs.proj, 2, center)) %*% unitX
+  Ycm <- as.matrix(sweep(ctrs.proj, 2, center)) %*% unitY
+  ctrs.plane <- data.frame(cbind(Xcm, Ycm))
+
+  # Join the counts of synapses with the centroid dataset
+  ctrs.plane['pre.bodyID'] <- row.names(ctrs.plane)
+  ctrs.plane <- merge(ctrs.plane, post, by='pre.bodyID', all=TRUE) %>% na.omit()
+
+  # Project the centroids onto the 2D line
+  ctrs.line <- ctrs.plane %>%
+    select(-c('X1', 'X2')) %>%
+    cbind(X=line.proj(ctrs.plane %>% select(X1, X2), uv_norm, origin)) %>%
+    rename(X1=X.1,
+           X2=X.2)
+
+  # Project the centroids on the 1D line
+  ctrs.1d <- ctrs.line %>%
+  select(-c('X1', 'X2')) %>%
+  cbind(X=as.matrix(sweep(ctrs.line %>% select(X1, X2), 2, origin)) %*% uv_norm)
+
+  # Evaluated weighted median
+  p1_wm <- weightedMedian(ctrs.1d$X, w=ctrs.1d$n.post1, interpolate=FALSE)
+  p2_wm <- weightedMedian(ctrs.1d$X, w=ctrs.1d$n.post2, interpolate=FALSE)
+
+  # Distance between the weighted means
+  dist <- abs(p1_wm - p2_wm)
+  cat(paste('  Median distance:', dist, '\n\n'))
+
+  # Update the distance matrix entry (symmetric)
+  dist_mtrx[p1, p2] <- dist
+  dist_mtrx[p2, p1] <- dist
+}
+
+# Show distance matrix
+corrplot(dist_mtrx,
+         is.corr=FALSE,  # It is not a correlation matrix
+         method='color',  # Color the background
+         type='upper',  # Only upper diagonal
+         order='alpha',  # Alphabetical
+         addCoef.col='black',  # Add values in black
+         number.cex=0.6,  # values size
+         diag=FALSE,  # No diagonal
+         tl.col='black')  # Color of the labels in black
+

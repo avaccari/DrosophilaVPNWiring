@@ -307,7 +307,7 @@ for (i in 1:ncol(com)) {
   acld_mean_mtrx[p1, p2] <- acld_mean
   acld_mean_mtrx[p2, p1] <- acld_mean
 
-    # Update the median matrix entry (symmetric)
+  # Update the median matrix entry (symmetric)
   median_mtrx[p1, p2] <- med
   median_mtrx[p2, p1] <- med
 
