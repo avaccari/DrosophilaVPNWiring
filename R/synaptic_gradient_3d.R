@@ -12,23 +12,23 @@
 #   of synapses with pre. The color scale is nomalized between the lowest number
 #   and the max number of synapses between the two posts and the pre
 # - the last plot shows both posts colored according to their relative number of
-#   synapses with the pre. The color scale goes 0-1 and is evaluated for each 
+#   synapses with the pre. The color scale goes 0-1 and is evaluated for each
 #   post neuron using:
 #   0.5 * (1 + (#post1_syn - #post2_syn)/(#post1_syn + #post2_syn))
 
 #
 # Copyright (c) 2021 Andrea Vaccari
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -71,7 +71,7 @@ if (!exists('nlist')) {
 # Define items to analyze here
 pre_type <- 'LC4'
 post_type1 <- 'DNp11' # Blue
-post_type2 <- 'PLP219' # Red 
+post_type2 <- 'PLP219' # Red
 
 # Using perceptually uniform color map
 # More options here:
@@ -81,9 +81,9 @@ c_size_single <- 100  # Number of colors in the map
 c_map_both <- 'd9'  # Map to use for both posts together
 c_size_both <- 100  # Number of colors in the map
 
-# Define the max to use when generating single gradient post plots. The colors 
-# will be scaled between zero and this max. If syn_max is set to zero, then the 
-# max number of synapses for each post. If syn_max is set and the number of 
+# Define the max to use when generating single gradient post plots. The colors
+# will be scaled between zero and this max. If syn_max is set to zero, then the
+# max number of synapses for each post. If syn_max is set and the number of
 # synapses is larger than syn_max, the color scale is capped at syn_max.
 syn_max <- 95
 
@@ -101,9 +101,9 @@ pre <- con %>% filter(pre.type==pre_type)
 
 # Post1 ----
 # Identify pre with synapses on post1 and count
-post1 <- pre %>% 
-         filter(post.type==post_type1) %>% 
-         group_by(pre.bodyID) %>% 
+post1 <- pre %>%
+         filter(post.type==post_type1) %>%
+         group_by(pre.bodyID) %>%
          dplyr::count()
 
 # Evaluate max and min number of synapses
@@ -117,9 +117,9 @@ for (i in 1:nrow(post1)) {
 
 # Post2 ----
 # Identify pre with synapses on post1 and count
-post2 <- pre %>% 
-         filter(post.type==post_type2) %>% 
-         group_by(pre.bodyID) %>% 
+post2 <- pre %>%
+         filter(post.type==post_type2) %>%
+         group_by(pre.bodyID) %>%
          dplyr::count()
 
 # Evaluate max and min number of synapses
@@ -161,23 +161,23 @@ bodyIDs.post1 <- post1 %>% pull(pre.bodyID)
 
 for (bodyID in bodyIDs.post1) {
   neu <- nlist[[toString(bodyID)]]
-  
+
   # Get the synapses count and correct for NULL values (only connection to one
   # of the pre)
   count1 <- neu$post1count
   if (is_null(count1)) {
     count1 <- post.syn.min
   }
-  
+
   # Scale the synapses count to the size of the color scale
   count1 <- min(c_size_single, round(1 + count1 * (c_size_single - 1) / syn1.max))
-  
+
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
          lwd=2,
          col=col_single[count1])
-}  
+}
 
 # Gradient plot for post2 (blue) - 0 to syn_max
 nopen3d()
@@ -193,14 +193,14 @@ bodyIDs.post2 <- post2 %>% pull(pre.bodyID)
 
 for (bodyID in bodyIDs.post2) {
   neu <- nlist[[toString(bodyID)]]
-  
+
   # Get the synapses count and correct for NULL values (only connection to one
   # of the pre)
   count2 <- neu$post2count
   if (is_null(count2)) {
     count2 <- post.syn.min
   }
-  
+
   # Scale the synapses count to the size of the color scale
   count2 <- min(c_size_single, round(1 + count2 * (c_size_single - 1) / syn2.max))
 
@@ -209,7 +209,7 @@ for (bodyID in bodyIDs.post2) {
          soma=TRUE,
          lwd=2,
          col=col_single[count2])
-}  
+}
 
 
 
@@ -223,7 +223,7 @@ bodyIDs.post1 <- post1 %>% pull(pre.bodyID)
 
 for (bodyID in bodyIDs.post1) {
   neu <- nlist[[toString(bodyID)]]
-  
+
   # Get the synapses count and correct for NULL values (only connection to one
   # of the pre)
   count1 <- neu$post1count
@@ -239,7 +239,7 @@ for (bodyID in bodyIDs.post1) {
          soma=TRUE,
          lwd=2,
          col=col_single[count1])
-}  
+}
 
 # Gradient plot for post2 (blue) - post.syn.min to post.syn.max
 nopen3d()
@@ -249,7 +249,7 @@ bodyIDs.post2 <- post2 %>% pull(pre.bodyID)
 
 for (bodyID in bodyIDs.post2) {
   neu <- nlist[[toString(bodyID)]]
-  
+
   # Get the synapses count and correct for NULL values (only connection to one
   # of the pre)
   count2 <- neu$post2count
@@ -265,7 +265,7 @@ for (bodyID in bodyIDs.post2) {
          soma=TRUE,
          lwd=2,
          col=col_single[count2])
-}  
+}
 
 # Plot joined dataset with gradient color post1 (red) -> post2 (blue)
 # Join all the bodyIDs
@@ -293,7 +293,7 @@ for (bodyID in bodyIDs) {
   # color scale
   count <- 0.5 * (1 + (count1 - count2)/(count1 + count2))
   count <- round(1 + count * (c_size_both - 1))
-  
+
   # Plot the neuron (post1: red, post2: blue)
   plot3d(neu,
          soma=TRUE,

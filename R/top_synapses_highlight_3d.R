@@ -11,17 +11,17 @@
 
 #
 # Copyright (c) 2021 Andrea Vaccari
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -88,23 +88,23 @@ pre <- con %>% filter(pre.type==pre_type)
 
 # Post1 ----
 # Identify pre with synapses on post1 and count
-post1 <- pre %>% 
-         filter(post.type==post_type1) %>% 
-         group_by(pre.bodyID) %>% 
+post1 <- pre %>%
+         filter(post.type==post_type1) %>%
+         group_by(pre.bodyID) %>%
          dplyr::count() %>%
          arrange(desc(n))
 
 # Post2 ----
 # Identify pre with synapses on post1 and count
-post2 <- pre %>% 
-         filter(post.type==post_type2) %>% 
-         group_by(pre.bodyID) %>% 
+post2 <- pre %>%
+         filter(post.type==post_type2) %>%
+         group_by(pre.bodyID) %>%
          dplyr::count() %>%
          arrange(desc(n))
 
 
 
- 
+
 # Display ----
 # Creating colormap
 cmap <- cet_pal(c_size, name=c_map)
@@ -116,7 +116,7 @@ par3d('windowRect' = c(100, 100, win_siz, win_siz))
 
 for (pos in 1:nrow(post1)) {
   neu <- nlist[[toString(post1[pos, 1])]]
-  
+
   # Highlight the top_neu neurons, the rest are plotted in gray
   col <- cmap[50]
   alpha <- 0.2
@@ -131,7 +131,7 @@ for (pos in 1:nrow(post1)) {
          lwd=2,
          # alpha=alpha,
          col=col)
-}  
+}
 
 # Plot top top_neu for post2 (blue) with others in gray
 nopen3d()
@@ -139,7 +139,7 @@ par3d('windowRect' = c(100, 100, win_siz, win_siz))
 
 for (pos in 1:nrow(post2)) {
   neu <- nlist[[toString(post2[pos, 1])]]
-  
+
   # Highlight the top_neu neurons, the rest are plotted in gray
   col <- cmap[50]
   alpha <- 0.2
@@ -147,14 +147,14 @@ for (pos in 1:nrow(post2)) {
     col <- cmap[1]
     alpha <- 1.0
   }
-  
+
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
          lwd=2,
          # alpha=alpha,
          col=col)
-}  
+}
 
 
 
@@ -181,7 +181,7 @@ for (pos in 1:top_neu) {
          lwd=2,
          # alpha=1.0,
          col=cmap[1])
-}  
+}
 
 # Plot the rest in gray
 max_row = max(nrow(post1), nrow(post2))
@@ -195,7 +195,7 @@ for (pos in (top_neu + 1):max_row) {
            # alpha=0.2,
            col=col)
   }
-  
+
   if (pos <= nrow(post2)) {
     neu <- nlist[[toString(post2[pos, 1])]]
     plot3d(neu,

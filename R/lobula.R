@@ -157,7 +157,7 @@ post2 <- pre %>%
          group_by(pre.bodyID) %>%
          dplyr::count()
 
-# Merge the two posts with the counts and replace NaN with zero
+# Merge the two posts with the counts
 post <- merge(post1,
               post2,
               by='pre.bodyID',
