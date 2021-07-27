@@ -366,7 +366,7 @@ ggplot() +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
-  geom_polygon(data=end_pts.proj[lo, ],
+  geom_polygon(data=end_pts.plane[lo, ],
                aes(x=X1, y=X2),
                alpha=0.2) +
   geom_point(data=ctrs,
@@ -390,6 +390,9 @@ ggplot() +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
+  geom_polygon(data=end_pts.plane[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   geom_point(data=ctrs,
              aes(x=X.plane, y=Y.plane),
              shape=1) +
@@ -415,6 +418,9 @@ ggplot() +
 
 # Midpoints of the segments
 ggplot() +
+  geom_polygon(data=end_pts.plane[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
@@ -440,6 +446,9 @@ ggplot() +
 
 # Lines containing the segments
 ggplot() +
+  geom_polygon(data=end_pts.plane[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
