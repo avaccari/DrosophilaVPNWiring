@@ -352,11 +352,23 @@ ms <- data.frame(ms)
 # Add columns with neuron names to ms
 ms <- ms %>% cbind(p1=com[1,], p2=com[2,])
 
+# Calculate the coordinates of the end points on the plane
+Xep <- as.matrix(sweep(end_pts.proj, 2, center)) %*% unitX
+Yep <- as.matrix(sweep(end_pts.proj, 2, center)) %*% unitY
+end_pts.plane <- data.frame(cbind(Xep, Yep))
+
+# Calculate and plot the convex hull for the lobula
+lo <- chull(end_pts.proj)
+
+
 # Segments connecting the weighted centroids
 ggplot() +             
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
+  geom_polygon(data=end_pts.proj[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   geom_point(data=ctrs,
              aes(x=X.plane, y=Y.plane),
              shape=1) +
