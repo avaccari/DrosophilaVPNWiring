@@ -30,41 +30,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#
 # TODO:
-# - Do something similar to what you did for the glomerulus and project on a
-#   given line A-P (the same along the D-V): project and evaluate the KS
-#   distance
-# - Visualize the distribution of intersections of posts with a plane (away from
-#   the ramification or using the simplified neurons) and consider a numeric
-#   evaluation
-# - For the spatial distribution at the lobula, consider if the Gini index or
-#   the Moran's I could work
-# - Check Madry, C. et al - Nature 2018 - Ramification Index
-# - Try to use the simplified neurons for the analysis
-# - Wighted Moran's I using centroid
-# - Weighted KS test similar to glomerulus along the 2 axes
 
-# - try distance between all the possible pairs (e.g. dnp02-dnp11) and calculate
-#   the median and create a matrix just like the ranking
-# - if it doesn't work, try with the distance between the centroid of the
-#   two pairs
-
-# - create a table (same as above) of the distances between the centroid
-#   (weighted KDE - weighted median of end points)
-
-# - retinotopy idx: calculate distances between each two bodyIDs (pre) both in
-#   lobula (centroids) and centroids of pre synaptic sites int the
-#   glomerulus (split plane), and create a correlation matrix as above with just
-#   the distances
-
-# - for all of these do a correlation graph where you plot one against the other
-
-# Completely umbiased approach (first)
-# - find the best separating line (SVM) for each post pairs with respect to pre
-# - find the median line of the above
-# - project on the perpendicular to the median and do box plots and evaluate
-#   distance between the weighted medians
-# - use these values to create a correlation matrix
 
 # Import required libraries
 library(tidyverse)
@@ -97,7 +65,7 @@ if (!exists('nlist')) {
 }
 
 # Source local files
-source('aux_functions.R')
+source('R/aux_functions.R')
 
 
 
@@ -304,36 +272,36 @@ proj1 <- ggplot() +
          xlab('A-P') +
          ylab('D-V') +
          geom_polygon(data=end_pts.plane[lo, ],
-                      aes(x=X1, y=X2),
+                      aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.2) +
          geom_point(data=end_pts.plane,
-                    aes(x=X1, y=X2),
+                    aes(x=0.008 * X1, y=0.008 * X2),
                     size=0.1,
                     alpha=0.2) +
          geom_point(data=ctrs.plane,
-                    aes(x=X1, y=X2, colour=n.post1, size=n.post1)) +
+                    aes(x=0.008 * X1, y=0.008 * X2, colour=n.post1, size=n.post1)) +
          scale_color_gradientn(colours=col_single) +
          scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
-                      aes(x=X1,
-                          y=min(end_pts.plane$X2) - dist_box,
+                      aes(x=0.008 * X1,
+                          y=0.008 * (min(end_pts.plane$X2) - dist_box),
                           weight=n.post1),
-                      width=width_box,
+                      width=0.008 * width_box,
                       notch=TRUE) +
          geom_boxplot(data=ctrs.plane,
-                      aes(y=X2,
-                          x=min(end_pts.plane$X1) - dist_box,
+                      aes(y=0.008 * X2,
+                          x=0.008 * (min(end_pts.plane$X1) - dist_box),
                           weight=n.post1),
-                      width=width_box,
+                      width=0.008 * width_box,
                       notch=TRUE) +
-         geom_segment(aes(x=p1_x1_wm - seg_len,
-                          xend=p1_x1_wm + seg_len,
-                          y=p1_x2_wm,
-                          yend=p1_x2_wm)) +
-         geom_segment(aes(y=p1_x2_wm - seg_len,
-                          yend=p1_x2_wm + seg_len,
-                          x=p1_x1_wm,
-                          xend=p1_x1_wm)) +
+         geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
+                          xend=0.008 * (p1_x1_wm + seg_len),
+                          y=0.008 * p1_x2_wm,
+                          yend=0.008 * p1_x2_wm)) +
+         geom_segment(aes(y=0.008 * (p1_x2_wm - seg_len),
+                          yend=0.008 * (p1_x2_wm + seg_len),
+                          x=0.008 * p1_x1_wm,
+                          xend=0.008 * p1_x1_wm)) +
          ggtitle(paste(pre_type, '>', post_type1, '(lobula projection)')) +
          theme(plot.title=element_text(hjust=0.5))
 
@@ -343,36 +311,36 @@ proj2 <- ggplot() +
          xlab('A-P') +
          ylab('D-V') +
          geom_polygon(data=end_pts.plane[lo, ],
-                      aes(x=X1, y=X2),
+                      aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.2) +
          geom_point(data=end_pts.plane,
-                    aes(x=X1, y=X2),
+                    aes(x=0.008 * X1, y=0.008 * X2),
                     size=0.1,
                     alpha=0.2) +
          geom_point(data=ctrs.plane,
-                    aes(x=X1, y=X2, colour=n.post2, size=n.post2)) +
+                    aes(x=0.008 * X1, y=0.008 * X2, colour=n.post2, size=n.post2)) +
          scale_color_gradientn(colours=col_single) +
          scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
-                      aes(x=X1,
-                          y=min(end_pts.plane$X2) - dist_box,
+                      aes(x=0.008 * X1,
+                          y=0.008 * (min(end_pts.plane$X2) - dist_box),
                           weight=n.post2),
-                      width=width_box,
+                      width=0.008 * width_box,
                       notch=TRUE) +
          geom_boxplot(data=ctrs.plane,
-                      aes(y=X2,
-                          x=min(end_pts.plane$X1) - dist_box,
+                      aes(y=0.008 * X2,
+                          x=0.008 * (min(end_pts.plane$X1) - dist_box),
                           weight=n.post2),
-                      width=width_box,
+                      width=0.008 * width_box,
                       notch=TRUE) +
-         geom_segment(aes(x=p2_x1_wm - seg_len,
-                          xend=p2_x1_wm + seg_len,
-                          y=p2_x2_wm,
-                          yend=p2_x2_wm)) +
-         geom_segment(aes(y=p2_x2_wm - seg_len,
-                          yend=p2_x2_wm + seg_len,
-                          x=p2_x1_wm,
-                          xend=p2_x1_wm)) +
+         geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
+                          xend=0.008 * (p2_x1_wm + seg_len),
+                          y=0.008 * p2_x2_wm,
+                          yend=0.008 * p2_x2_wm)) +
+         geom_segment(aes(y=0.008 * (p2_x2_wm - seg_len),
+                          yend=0.008 * (p2_x2_wm + seg_len),
+                          x=0.008 * p2_x1_wm,
+                          xend=0.008 * p2_x1_wm)) +
          ggtitle(paste(pre_type, '>', post_type2, '(lobula projection)')) +
          theme(plot.title=element_text(hjust=0.5))
 
@@ -385,79 +353,79 @@ ggplot() +
   xlab('A-P') +
   ylab('D-V') +
   geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
+               aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.2) +
   geom_point(data=end_pts.plane,
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              size=0.1,
              alpha=0.2) +
   geom_point(data=ctrs.plane,
-             aes(x=X1, y=X2, size=n.post1),
+             aes(x=0.008 * X1, y=0.008 * X2, size=n.post1),
              colour='red',
              shape=1,
              stroke=1) +
   geom_point(data=ctrs.plane,
-             aes(x=X1, y=X2, size=n.post2),
+             aes(x=0.008 * X1, y=0.008 * X2, size=n.post2),
              colour='blue',
              shape=1,
              stroke=1) +
   geom_boxplot(data=ctrs.plane,
-               aes(x=X1,
-                   y=min(end_pts.plane$X2) - dist_box,
+               aes(x=0.008 * X1,
+                   y=0.008 * (min(end_pts.plane$X2) - dist_box),
                    weight=n.post1),
-               width=width_box,
+               width=0.008 * width_box,
                notch=TRUE,
                col='red') +
   geom_boxplot(data=ctrs.plane,
-               aes(y=X2,
-                   x=min(end_pts.plane$X1) - dist_box,
+               aes(y=0.008 * X2,
+                   x=0.008 * (min(end_pts.plane$X1) - dist_box),
                    weight=n.post1),
-               width=width_box,
+               width=0.008 * width_box,
                notch=TRUE,
                col='red') +
-  geom_segment(aes(x=p1_x1_wm - seg_len,
-                   xend=p1_x1_wm + seg_len,
-                   y=p1_x2_wm,
-                   yend=p1_x2_wm),
+  geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
+                   xend=0.008 * (p1_x1_wm + seg_len),
+                   y=0.008 * p1_x2_wm,
+                   yend=0.008 * p1_x2_wm),
                col='red') +
-  geom_segment(aes(y=p1_x2_wm - seg_len,
-                   yend=p1_x2_wm + seg_len,
-                   x=p1_x1_wm,
-                   xend=p1_x1_wm),
+  geom_segment(aes(y=0.008 * (p1_x2_wm - seg_len),
+                   yend=0.008 * (p1_x2_wm + seg_len),
+                   x=0.008 * p1_x1_wm,
+                   xend=0.008 * p1_x1_wm),
                col='red') +
   geom_boxplot(data=ctrs.plane,
-               aes(x=X1,
-                   y=min(end_pts.plane$X2) - 2 * dist_box,
+               aes(x=0.008 * X1,
+                   y=0.008 * (min(end_pts.plane$X2) - 2 * dist_box),
                    weight=n.post2),
-               width=width_box,
+               width=0.008 * width_box,
                notch=TRUE,
                col='blue') +
   geom_boxplot(data=ctrs.plane,
-               aes(y=X2,
-                   x=min(end_pts.plane$X1) - 2 * dist_box,
+               aes(y=0.008 * X2,
+                   x=0.008 * (min(end_pts.plane$X1) - 2 * dist_box),
                    weight=n.post2),
-               width=width_box,
+               width=0.008 * width_box,
                notch=TRUE,
                col='blue') +
-  geom_segment(aes(x=p2_x1_wm - seg_len,
-                   xend=p2_x1_wm + seg_len,
-                   y=p2_x2_wm,
-                   yend=p2_x2_wm),
+  geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
+                   xend=0.008 * (p2_x1_wm + seg_len),
+                   y=0.008 * p2_x2_wm,
+                   yend=0.008 * p2_x2_wm),
                col='blue') +
-  geom_segment(aes(y=p2_x2_wm - seg_len,
-                   yend=p2_x2_wm + seg_len,
-                   x=p2_x1_wm,
-                   xend=p2_x1_wm),
+  geom_segment(aes(y=0.008 * (p2_x2_wm - seg_len),
+                   yend=0.008 * (p2_x2_wm + seg_len),
+                   x=0.008 * p2_x1_wm,
+                   xend=0.008 * p2_x1_wm),
                col='blue') +
-  geom_segment(aes(x=p1_x1_wm,
-                   xend=p2_x1_wm,
-                   y=p1_x2_wm,
-                   yend=p2_x2_wm),
+  geom_segment(aes(x=0.008 * p1_x1_wm,
+                   xend=0.008 * p2_x1_wm,
+                   y=0.008 * p1_x2_wm,
+                   yend=0.008 * p2_x2_wm),
                col='black') +
   annotate('text',
            label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
-           x=min(p1_x1_wm, p2_x1_wm),
-           y=min(p1_x2_wm, p2_x2_wm),
+           x=0.008 * min(p1_x1_wm, p2_x1_wm),
+           y=0.008 * min(p1_x2_wm, p2_x2_wm),
            size=5) +
   ggtitle(paste('Weighted median distance', post_type1, '(red) <=>', post_type2, '(blue)')) +
   theme(plot.title=element_text(hjust=0.5))

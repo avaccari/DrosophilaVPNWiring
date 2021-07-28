@@ -24,6 +24,34 @@
 
 #
 # TODO:
+# - Run the cross correlation between the different VPN using one from one and 
+#   the one from the other (pcorr and dist). Create a large corralation matrix
+#   where the rows are distances and the columns are the pcorr. The diagonal
+#   should be the best results. (VPN to use: LC4, LC6, LC9, LC10, LC11, LC12, 
+#   LC13, LC15, LC16, LC17, LC18, LC20, LC21, LC22, LC24, LC25, LC26, LPLC1, 
+#   LPLC2, LPLC4) For the actual paper we only need LC4 and LPLC2. Different
+#   script.
+# - 4x5 independent plots of the top 20 posts for a given pre sorted by number
+#   of synapses
+# con %>%
+#   filter(pre.type %in% c("LC4"), post.type %in% c("SAD064","DNp11","PLP219")) %>%
+#   group_by(pre.bodyID, pre.type, post.type) %>%
+#   dplyr::count() %>%
+#   ungroup()%>%
+#   ggplot(aes(x=reorder(pre.bodyID,n), y = n))+
+#   geom_point(size = 6, col="steelblue")+
+#   facet_wrap(. ~ post.type, scales = "free_y")+
+#   theme_bw() +
+#   xlab("VPN ID, arranged by descending output")+
+#   ylab("number of synapses")+
+#   theme(
+#     plot.title = element_text(color="black", size=14, face="bold.italic"),
+#     axis.title.x = element_text(color="black", size=14, face="bold"),
+#     axis.text.x = element_text(face="bold", color="black", size=10),
+#     axis.title.y = element_text(color="black", size=14, face="bold"),
+#     axis.text.y = element_text(face="bold", color="black", size=15),
+#     strip.text = element_text(size = 20, face="bold")
+#   )
 
 # Import required libraries
 library(tidyverse)
@@ -67,7 +95,7 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
 top <- 20
@@ -363,20 +391,20 @@ ggplot() +
   xlab('A-P') +
   ylab('D-V') +
   geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
+               aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.2) +
   geom_point(data=ctrs,
-             aes(x=X.plane, y=Y.plane),
+             aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
   geom_segment(data=ms,
-               aes(x=X5, y=X6, xend=X7, yend=X8),
+               aes(x=0.008 * X5, y=0.008 * X6, xend=0.008 * X7, yend=0.008 * X8),
                color='#ff000060') +
   geom_text(data=ms,
-            aes(x=X5, y=X6, label=p1)) +
+            aes(x=0.008 * X5, y=0.008 * X6, label=p1)) +
   geom_text(data=ms,
-            aes(x=X7, y=X8, label=p2)) +
+            aes(x=0.008 * X7, y=0.008 * X8, label=p2)) +
   geom_point(data=data.frame(t(origin)),
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              color='#0000ff') +
   ggtitle('Segments connecting weighted centroids') +
   theme(plot.title=element_text(hjust=0.5))
@@ -387,27 +415,27 @@ ggplot() +
   xlab('A-P') +
   ylab('D-V') +
   geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
+               aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.2) +
   geom_point(data=ctrs,
-             aes(x=X.plane, y=Y.plane),
+             aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
   geom_segment(data=ms,
-               aes(x=X5, y=X6, xend=X7, yend=X8),
+               aes(x=0.008 * X5, y=0.008 * X6, xend=0.008 * X7, yend=0.008 * X8),
                color='#ff000060') +
   geom_text(data=ms,
-            aes(x=X5, y=X6, label=p1)) +
+            aes(x=0.008 * X5, y=0.008 * X6, label=p1)) +
   geom_text(data=ms,
-            aes(x=X7, y=X8, label=p2)) +
+            aes(x=0.008 * X7, y=0.008 * X8, label=p2)) +
   geom_point(data=data.frame(t(origin)),
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              color='#0000ff') +
   geom_abline(data=data.frame(t(med)),
-              aes(slope=X4, intercept=X3),
+              aes(slope=X4, intercept=0.008 * X3),
               color='#0000ff',
               linetype='dashed') +
   geom_abline(data=data.frame(t(c(per_intr, per_coef))),
-              aes(slope=X2, intercept=X1),
+              aes(slope=X2, intercept=0.008 * X1),
               color='#0000ff') +
   ggtitle('Segments connectring weighted centroids (red)\n median line (solid blue)\n projection line (dashed blue)') +
   theme(plot.title=element_text(hjust=0.5))
@@ -418,24 +446,24 @@ ggplot() +
   xlab('A-P') +
   ylab('D-V') +
   geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
+               aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.2) +
   geom_point(data=ctrs,
-             aes(x=X.plane, y=Y.plane),
+             aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
   geom_point(data=ms,
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              color='#ff0000',
              shape=16) +
   geom_point(data=data.frame(t(origin)),
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              color='#0000ff') +
   geom_abline(data=data.frame(t(med)),
-              aes(slope=X4, intercept=X3),
+              aes(slope=X4, intercept=0.008 * X3),
               color='#0000ff',
               linetype='dashed') +
   geom_abline(data=data.frame(t(c(per_intr, per_coef))),
-              aes(slope=X2, intercept=X1),
+              aes(slope=X2, intercept=0.008 * X1),
               color='#0000ff') +
   ggtitle('Midpoints of segments connectring weighted centroids') +
   theme(plot.title=element_text(hjust=0.5))
@@ -446,23 +474,23 @@ ggplot() +
   xlab('A-P') +
   ylab('D-V') +
   geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
+               aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.2) +
   geom_point(data=ctrs,
-             aes(x=X.plane, y=Y.plane),
+             aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
   geom_abline(data=ms,
-              aes(slope=X4, intercept=X3),
+              aes(slope=X4, intercept=0.008 * X3),
               color='#ff000060') +
   geom_point(data=data.frame(t(origin)),
-             aes(x=X1, y=X2),
+             aes(x=0.008 * X1, y=0.008 * X2),
              color='#0000ff') +
   geom_abline(data=data.frame(t(med)),
-              aes(slope=X4, intercept=X3),
+              aes(slope=X4, intercept=0.008 * X3),
               color='#0000ff',
               linetype='dashed') +
   geom_abline(data=data.frame(t(c(per_intr, per_coef))),
-              aes(slope=X2, intercept=X1),
+              aes(slope=X2, intercept=0.008 * X1),
               color='#0000ff') +
   ggtitle('Lines connectring weighted centroids (red)\n median line (solid blue)\n projection line (dashed blue)') +
   theme(plot.title=element_text(hjust=0.5))
@@ -526,7 +554,7 @@ for (c in 1:ncol(eval_com)) {
 }
 
 # Show distance matrix
-corrplot(dist_mtrx,
+corrplot(0.008 * dist_mtrx,
          is.corr=FALSE,  # It is not a correlation matrix
          method='color',  # Color the background
          type='upper',  # Only upper diagonal
@@ -560,25 +588,24 @@ merged <- merge(pcorr_df, dist_mtrx_df, by=c('row','column'))
 # Evaluate the correlation between the two
 corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
 
-
 # Plot the results
 ggplot() +
   xlim(-1, 1) +
   ylab("Distance between centroids in the lobula") +
   xlab("Glomerular connectivity correlation") +
   geom_point(data=merged,
-             aes(x=cor.x, y=cor.y),
+             aes(x=cor.x, y=0.008 * cor.y),
              size=2,
              col="steelblue")+
   geom_smooth(data=merged,
-              aes(x=cor.x, y=cor.y),
-              method="lm",
+              aes(x=cor.x, y=0.008 * cor.y),
+              method=lm,
               formula= 'y ~ x', 
               col="red", 
               se=TRUE) +
   annotate('text', 
            col="red",
            label=toString(paste("Pearson's r =", round(corr, 2))),
-           x=0.5 * max(merged$cor.x),
-           y=1 * max(merged$cor.y),
+           x=0.5 * 0.008 * max(merged$cor.x),
+           y=1 * 0.008 * max(merged$cor.y),
            size=5)
