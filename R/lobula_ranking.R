@@ -238,7 +238,7 @@ top_posts <- pre %>%
 # Evaluate the combinations of the top posts
 com_full <- combn(top_posts, 2)
 
-# If only using anti-parallel, extract the info
+# If only using anti-parallel to evaluate projection line, extract the info
 if (use_anti == TRUE) {
   # Extract top posts and their counts
   posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
@@ -246,11 +246,13 @@ if (use_anti == TRUE) {
   # Evaluate the Pearson's correlation matrix
   pcorr <- cor(posts, method="pearson", use="complete.obs")
   
-  # Create a data frame with the results
+  # convert to data frame with the results and write each pair as a row entry
   ut <- upper.tri(pcorr)
   pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
                          column=rownames(pcorr)[col(pcorr)[ut]],
                          cor=(pcorr)[ut])
+
+  # Sort the data on the correlation values
   pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
   
   # Extract the anticorrelated pairs below the threshold
@@ -305,13 +307,7 @@ for (c in 1:ncol(com)) {
   
   # Store origin
   ms[c, 1:2] <- origin
-  
-  # # Project the centroids onto the line connecting the two centroids
-  # ctrs.plane <- ctrs %>%
-  #   cbind(X=line.proj(ctrs[c('X.plane', 'Y.plane')], uv_norm, origin)) %>%
-  #   rename(X=X.1,
-  #          Y=X.2)
-  
+
   # Evaluate the projection line
   reg <- lm(c(p1_x2_wm, p2_x2_wm) ~ c(p1_x1_wm, p2_x1_wm))
   
@@ -418,12 +414,12 @@ ggplot() +
 
 # Midpoints of the segments
 ggplot() +
-  geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
-               alpha=0.2) +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
+  geom_polygon(data=end_pts.plane[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   geom_point(data=ctrs,
              aes(x=X.plane, y=Y.plane),
              shape=1) +
@@ -446,12 +442,12 @@ ggplot() +
 
 # Lines containing the segments
 ggplot() +
-  geom_polygon(data=end_pts.plane[lo, ],
-               aes(x=X1, y=X2),
-               alpha=0.2) +
   coord_fixed() +
   xlab('A-P') +
   ylab('D-V') +
+  geom_polygon(data=end_pts.plane[lo, ],
+               aes(x=X1, y=X2),
+               alpha=0.2) +
   geom_point(data=ctrs,
              aes(x=X.plane, y=Y.plane),
              shape=1) +
@@ -540,3 +536,49 @@ corrplot(dist_mtrx,
          diag=FALSE,  # No diagonal
          tl.col='black')  # Color of the labels in black
 
+
+
+
+# Check the correlation between the distance matrix and the correlation matrix
+# from the gradient ranking
+
+# Sort in alphabetical order row and columns by name for the two matrices.
+pcorr_srt <- pcorr[order(rownames(pcorr)), order(colnames(pcorr))]
+dist_mtrx_srt <- dist_mtrx[order(rownames(dist_mtrx)), order(colnames(dist_mtrx))]
+
+# Convert the matrices in dataframes
+pcorr_df <- data.frame(row=rownames(pcorr_srt)[row(pcorr_srt)[ut]],
+                       column=rownames(pcorr_srt)[col(pcorr_srt)[ut]],
+                       cor=(pcorr_srt)[ut])
+dist_mtrx_df <- data.frame(row=rownames(dist_mtrx_srt)[row(dist_mtrx_srt)[ut]],
+                           column=rownames(dist_mtrx_srt)[col(dist_mtrx_srt)[ut]],
+                           cor=(dist_mtrx_srt)[ut])
+
+# Merge the matrices by rows and columns
+merged <- merge(pcorr_df, dist_mtrx_df, by=c('row','column'))
+
+# Evaluate the correlation between the two
+corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
+
+
+# Plot the results
+ggplot() +
+  xlim(-1, 1) +
+  ylab("Distance between centroids in the lobula") +
+  xlab("Glomerular connectivity correlation") +
+  geom_point(data=merged,
+             aes(x=cor.x, y=cor.y),
+             size=2,
+             col="steelblue")+
+  geom_smooth(data=merged,
+              aes(x=cor.x, y=cor.y),
+              method="lm",
+              formula= 'y ~ x', 
+              col="red", 
+              se=TRUE) +
+  annotate('text', 
+           col="red",
+           label=toString(paste("Pearson's r =", round(corr, 2))),
+           x=0.5 * max(merged$cor.x),
+           y=1 * max(merged$cor.y),
+           size=5)

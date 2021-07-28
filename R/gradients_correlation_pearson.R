@@ -95,7 +95,7 @@ merge$n.y.norm <- merge$n.y / count_max_y
 ggplot(merge, aes(x=n.x.norm, y=n.y.norm, col=pre.bodyID))+
   geom_point(size = 3, col="steelblue")+
   geom_smooth(method="lm",formula= 'y ~ x', col="red", se=TRUE)+
-  theme_classic()+
+  theme_classic() +
   ylab(paste(pre_type, '>', post_type1, 'synapses'))+
   xlab(paste(pre_type, '>', post_type2, 'synapses'))+
   theme(axis.text.x = element_text(face="bold", color="black", size=13, angle=0),
