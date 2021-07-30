@@ -26,27 +26,6 @@
 
 #
 # TODO:
-# - 4x5 independent plots of the top 20 posts for a given pre sorted by number
-#   of synapses
-# con %>%
-#   filter(pre.type %in% c("LC4"), post.type %in% c("SAD064","DNp11","PLP219")) %>%
-#   group_by(pre.bodyID, pre.type, post.type) %>%
-#   dplyr::count() %>%
-#   ungroup()%>%
-#   ggplot(aes(x=reorder(pre.bodyID,n), y = n))+
-#   geom_point(size = 6, col="steelblue")+
-#   facet_wrap(. ~ post.type, scales = "free_y")+
-#   theme_bw() +
-#   xlab("VPN ID, arranged by descending output")+
-#   ylab("number of synapses")+
-#   theme(
-#     plot.title = element_text(color="black", size=14, face="bold.italic"),
-#     axis.title.x = element_text(color="black", size=14, face="bold"),
-#     axis.text.x = element_text(face="bold", color="black", size=10),
-#     axis.title.y = element_text(color="black", size=14, face="bold"),
-#     axis.text.y = element_text(face="bold", color="black", size=15),
-#     strip.text = element_text(size = 20, face="bold")
-#   )
 
 # Import required libraries
 library(tidyverse)
