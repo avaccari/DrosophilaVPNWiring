@@ -58,14 +58,14 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("data/hemibrain_con0.rds")
+  con <- readRDS("hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("data/nlist1.rds")
+  nlist <- readRDS("nlist1.rds")
 }
 
 # Source local files
-source('R/aux_functions.R')
+source('aux_functions.R')
 
 
 
@@ -77,8 +77,8 @@ source('R/aux_functions.R')
 ###############################################################################
 # Define items to analyze here
 pre_type <- 'LC4'
-post_type1 <- 'DNp05'  # Red
-post_type2 <- 'DNp02'  # Blue
+post_type1 <- 'DNp02'  # Red
+post_type2 <- 'DNp11'  # Blue
 
 # Define a plane separating lobula from glomerulus (it will be used to only
 # consider the lobulat in the analysis)
@@ -269,19 +269,19 @@ dist_wm = sqrt((p1_x1_wm - p2_x1_wm)^2 + (p1_x2_wm - p2_x2_wm)^2)
 # Generate the plot for post1
 proj1 <- ggplot() +
          coord_fixed() +
-         xlab('A-P') +
-         ylab('D-V') +
+         xlab('A-P axis, um') +
+         ylab('D-V axis, um') +
          geom_polygon(data=end_pts.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
-                      alpha=0.2) +
-         geom_point(data=end_pts.plane,
-                    aes(x=0.008 * X1, y=0.008 * X2),
-                    size=0.1,
-                    alpha=0.2) +
+                      alpha=0.3) +
+         #geom_point(data=end_pts.plane,
+          #          aes(x=0.008 * X1, y=0.008 * X2),
+           #         size=0.1,
+            #        alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post1, size=n.post1)) +
          scale_color_gradientn(colours=col_single) +
-         scale_size_continuous(range=c(0, 7)) +
+         #scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
                       aes(x=0.008 * X1,
                           y=0.008 * (min(end_pts.plane$X2) - dist_box),
@@ -297,30 +297,35 @@ proj1 <- ggplot() +
          geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
                           xend=0.008 * (p1_x1_wm + seg_len),
                           y=0.008 * p1_x2_wm,
-                          yend=0.008 * p1_x2_wm)) +
+                          yend=0.008 * p1_x2_wm), col="black", size=2) +
          geom_segment(aes(y=0.008 * (p1_x2_wm - seg_len),
                           yend=0.008 * (p1_x2_wm + seg_len),
                           x=0.008 * p1_x1_wm,
-                          xend=0.008 * p1_x1_wm)) +
+                          xend=0.008 * p1_x1_wm), col="black", size=2) +
          ggtitle(paste(pre_type, '>', post_type1, '(lobula projection)')) +
-         theme(plot.title=element_text(hjust=0.5))
+         theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+        plot.title = element_text(face="bold", color="black", size=15),
+        axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
 
 # Generate the plot for post2
 proj2 <- ggplot() +
          coord_fixed() +
-         xlab('A-P') +
-         ylab('D-V') +
+         xlab('A-P axis, um') +
+         ylab('D-V axis, um') +
          geom_polygon(data=end_pts.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
-                      alpha=0.2) +
-         geom_point(data=end_pts.plane,
-                    aes(x=0.008 * X1, y=0.008 * X2),
-                    size=0.1,
-                    alpha=0.2) +
+                      alpha=0.3) +
+         #geom_point(data=end_pts.plane,
+          #          aes(x=0.008 * X1, y=0.008 * X2),
+           #         size=0.1,
+            #        alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post2, size=n.post2)) +
          scale_color_gradientn(colours=col_single) +
-         scale_size_continuous(range=c(0, 7)) +
+         #scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
                       aes(x=0.008 * X1,
                           y=0.008 * (min(end_pts.plane$X2) - dist_box),
@@ -333,16 +338,21 @@ proj2 <- ggplot() +
                           weight=n.post2),
                       width=0.008 * width_box,
                       notch=TRUE) +
-         geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
+        geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
                           xend=0.008 * (p2_x1_wm + seg_len),
                           y=0.008 * p2_x2_wm,
-                          yend=0.008 * p2_x2_wm)) +
+                          yend=0.008 * p2_x2_wm), col="black", size=2) +
          geom_segment(aes(y=0.008 * (p2_x2_wm - seg_len),
                           yend=0.008 * (p2_x2_wm + seg_len),
                           x=0.008 * p2_x1_wm,
-                          xend=0.008 * p2_x1_wm)) +
+                          xend=0.008 * p2_x1_wm), col="black", size=2) +
          ggtitle(paste(pre_type, '>', post_type2, '(lobula projection)')) +
-         theme(plot.title=element_text(hjust=0.5))
+         theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+        plot.title = element_text(face="bold", color="black", size=15),
+        axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
 
 # Combine and show the plots
 grid.arrange(proj1, proj2, ncol=2)
@@ -350,83 +360,89 @@ grid.arrange(proj1, proj2, ncol=2)
 # Generate a single plot that shows the location of the two centroids
 ggplot() +
   coord_fixed() +
-  xlab('A-P') +
-  ylab('D-V') +
+  xlab('A-P axis, um') +
+  ylab('D-V axis, um') +
   geom_polygon(data=end_pts.plane[lo, ],
                aes(x=0.008 * X1, y=0.008 * X2),
-               alpha=0.2) +
-  geom_point(data=end_pts.plane,
-             aes(x=0.008 * X1, y=0.008 * X2),
-             size=0.1,
-             alpha=0.2) +
-  geom_point(data=ctrs.plane,
-             aes(x=0.008 * X1, y=0.008 * X2, size=n.post1),
-             colour='red',
-             shape=1,
-             stroke=1) +
-  geom_point(data=ctrs.plane,
-             aes(x=0.008 * X1, y=0.008 * X2, size=n.post2),
-             colour='blue',
-             shape=1,
-             stroke=1) +
+               alpha=0.3) +
+  #geom_point(data=end_pts.plane,
+   #          aes(x=0.008 * X1, y=0.008 * X2),
+    #         size=0.5,
+     #        alpha=0.1) +
+  #geom_point(data=ctrs.plane,
+   #          aes(x=0.008 * X1, y=0.008 * X2, size=n.post1),
+    #         colour='red',
+     #        shape=1,
+      #       stroke=1.5) +
+  #geom_point(data=ctrs.plane,
+   #          aes(x=0.008 * X1, y=0.008 * X2, size=n.post2),
+    #         colour='blue',
+     #        shape=1,
+      #       stroke=1.5) +
   geom_boxplot(data=ctrs.plane,
                aes(x=0.008 * X1,
                    y=0.008 * (min(end_pts.plane$X2) - dist_box),
                    weight=n.post1),
                width=0.008 * width_box,
                notch=TRUE,
-               col='red') +
+               col='red', size=1) +
   geom_boxplot(data=ctrs.plane,
                aes(y=0.008 * X2,
                    x=0.008 * (min(end_pts.plane$X1) - dist_box),
                    weight=n.post1),
                width=0.008 * width_box,
                notch=TRUE,
-               col='red') +
+               col='red', size=1) +
   geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
                    xend=0.008 * (p1_x1_wm + seg_len),
                    y=0.008 * p1_x2_wm,
                    yend=0.008 * p1_x2_wm),
-               col='red') +
+               col='red', size=3) +
   geom_segment(aes(y=0.008 * (p1_x2_wm - seg_len),
                    yend=0.008 * (p1_x2_wm + seg_len),
                    x=0.008 * p1_x1_wm,
                    xend=0.008 * p1_x1_wm),
-               col='red') +
+               col='red', size=3) +
   geom_boxplot(data=ctrs.plane,
                aes(x=0.008 * X1,
                    y=0.008 * (min(end_pts.plane$X2) - 2 * dist_box),
                    weight=n.post2),
                width=0.008 * width_box,
                notch=TRUE,
-               col='blue') +
+               col='blue', size=1) +
   geom_boxplot(data=ctrs.plane,
                aes(y=0.008 * X2,
                    x=0.008 * (min(end_pts.plane$X1) - 2 * dist_box),
                    weight=n.post2),
                width=0.008 * width_box,
                notch=TRUE,
-               col='blue') +
+               col='blue', size=1) +
   geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
                    xend=0.008 * (p2_x1_wm + seg_len),
                    y=0.008 * p2_x2_wm,
                    yend=0.008 * p2_x2_wm),
-               col='blue') +
+               col='blue', size=3) +
   geom_segment(aes(y=0.008 * (p2_x2_wm - seg_len),
                    yend=0.008 * (p2_x2_wm + seg_len),
                    x=0.008 * p2_x1_wm,
                    xend=0.008 * p2_x1_wm),
-               col='blue') +
+               col='blue', size=3) +
   geom_segment(aes(x=0.008 * p1_x1_wm,
                    xend=0.008 * p2_x1_wm,
                    y=0.008 * p1_x2_wm,
                    yend=0.008 * p2_x2_wm),
-               col='black') +
+               col='yellow', size=1) +
   annotate('text',
            label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
            x=0.008 * min(p1_x1_wm, p2_x1_wm),
            y=0.008 * min(p1_x2_wm, p2_x2_wm),
-           size=5) +
+           size=5, col="black", hjust=1.1) +
   ggtitle(paste('Weighted median distance', post_type1, '(red) <=>', post_type2, '(blue)')) +
-  theme(plot.title=element_text(hjust=0.5))
+  theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+        plot.title = element_text(face="bold", color="black", size=12),
+        axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
+
 
