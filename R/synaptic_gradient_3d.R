@@ -56,10 +56,10 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("data/hemibrain_con0.rds")
+  con <- readRDS("hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("data/nlist1.rds")
+  nlist <- readRDS("nlist1.rds")
 }
 
 
@@ -70,22 +70,22 @@ if (!exists('nlist')) {
 ###############################################################################
 # Define items to analyze here
 pre_type <- 'LC4'
-post_type1 <- 'DNp11' # Blue
-post_type2 <- 'PLP219' # Red
+post_type1 <- 'PVLP022' # Blue
+post_type2 <- 'DNp11' # Red
 
 # Using perceptually uniform color map
 # More options here:
 # https://cran.r-project.org/web/packages/cetcolor/vignettes/cet_color_schemes.html
 c_map_single <- 'r2'  # Map to use for individual post plot
 c_size_single <- 100  # Number of colors in the map
-c_map_both <- 'd9'  # Map to use for both posts together
+c_map_both <- 'r2'  # Map to use for both posts together
 c_size_both <- 100  # Number of colors in the map
 
 # Define the max to use when generating single gradient post plots. The colors
 # will be scaled between zero and this max. If syn_max is set to zero, then the
 # max number of synapses for each post. If syn_max is set and the number of
 # synapses is larger than syn_max, the color scale is capped at syn_max.
-syn_max <- 95
+syn_max <- 40
 
 # Plot window size
 win_siz <- 500
@@ -175,7 +175,7 @@ for (bodyID in bodyIDs.post1) {
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
-         lwd=2,
+         lwd=3,
          col=col_single[count1])
 }
 
@@ -207,7 +207,7 @@ for (bodyID in bodyIDs.post2) {
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
-         lwd=2,
+         lwd=3,
          col=col_single[count2])
 }
 
@@ -237,7 +237,7 @@ for (bodyID in bodyIDs.post1) {
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
-         lwd=2,
+         lwd=3,
          col=col_single[count1])
 }
 
@@ -263,7 +263,7 @@ for (bodyID in bodyIDs.post2) {
   # Plot the neuron
   plot3d(neu,
          soma=TRUE,
-         lwd=2,
+         lwd=3,
          col=col_single[count2])
 }
 
@@ -297,6 +297,6 @@ for (bodyID in bodyIDs) {
   # Plot the neuron (post1: red, post2: blue)
   plot3d(neu,
          soma=TRUE,
-         lwd=2,
+         lwd=3,
          col=col_both[count])
 }

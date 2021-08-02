@@ -43,10 +43,10 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("data/hemibrain_con0.rds")
+  con <- readRDS("hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("data/nlist1.rds")
+  nlist <- readRDS("nlist1.rds")
 }
 
 
@@ -83,11 +83,11 @@ top_posts <- pre %>%
   slice(1:top) %>%
   pull(post.type)
 
-# Filter the dataset accroding to the top synapses
+# Filter the data set according to the top synapses
 top_cnt <- pre %>%
   filter(post.type %in% top_posts) %>%
   group_by(pre.bodyID, post.type) %>%
-  count() %>%
+  dplyr::count() %>%
   arrange(desc(n))
 
 # Add index as column
@@ -95,13 +95,25 @@ top_cnt$idx <- as.numeric(rownames(top_cnt))
 
 # Plot data
 ggplot() +
-  xlab("VPN ID, arranged by descending output")+
-  ylab("number of synapses")+
+  xlab("Individual LC4, arranged by descending output (independent on every graph)")+
+  ylab("Number of synapses")+
+  theme_bw()+
+  ylim(0, NA) +
   geom_point(data=top_cnt,
-             aes(x=idx, y=n)) +
+             aes(x=idx, y=n), 
+             size=3, 
+             col="#990000") +
   facet_wrap(~ post.type,
-             scales='free_x') +
+             scales="free") +
+  #used to have "free_x
   theme(axis.text.x=element_blank(),
-        axis.ticks.x=element_blank())
+        axis.ticks.x=element_blank())+
+  theme(axis.text.y = element_text(face="bold", color="black", size=12, angle=0),
+        plot.title = element_text(face="bold", color="blue", size=15),
+        axis.title.y = element_text(size=18),
+        axis.title.x = element_text(size=18),
+        strip.text = element_text(size = 13, face="bold"),
+        strip.background = element_rect(fill="#33CCFF"))
+        
 
             
