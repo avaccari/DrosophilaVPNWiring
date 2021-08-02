@@ -272,6 +272,9 @@ if (use_anti == TRUE) {
 } else {
   # Evaluate all possible combinations without repetition
   com <- com_full
+
+    # Evaluate the Pearson's correlation matrix
+  pcorr <- cor(all_posts_cht, method="pearson", use="complete.obs")
 }
 
 
@@ -535,12 +538,23 @@ for (c in 1:ncol(eval_com)) {
   dist_mtrx[p2, p1] <- dist
 }
 
+###############################################################################
+# This section is needed only if you want the correlation plot to be sorted in
+# the same way in all the scripts.
+sort.pcorr <- order(rownames(pcorr))
+pcorr <- pcorr[sort.pcorr, sort.pcorr]
+pcorr.FPC <- corrMatOrder(pcorr, order='FPC')
+sort.dist_mtrx <- order(rownames(dist_mtrx))
+dist_mtrx <- dist_mtrx[sort.dist_mtrx, sort.dist_mtrx]
+dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
+###############################################################################
+
 # Show distance matrix
-corrplot(0.008 * dist_mtrx,
+corrplot(0.008 * dist_mtrx_no,
          is.corr=FALSE,  # It is not a correlation matrix
          method='color',  # Color the background
          type='upper',  # Only upper diagonal
-         order='alpha',  # Alphabetical
+         order='original',  # Alphabetical
          addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
          diag=FALSE,  # No diagonal
@@ -569,7 +583,6 @@ merged <- merge(pcorr_df, dist_mtrx_df, by=c('row','column'))
 
 # Evaluate the correlation between the two
 corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
-
 
 
 # Plot the results

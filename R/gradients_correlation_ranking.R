@@ -57,7 +57,7 @@ if (!exists('nlist')) {
 pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 25
+top <- 20
 ###############################################################################
 
 
@@ -114,7 +114,12 @@ print(head(pcorr_df, 10))
 cat('Most correlated:\n')
 print(tail(pcorr_df, 10))
 
-
+###############################################################################
+# This section is needed only if you want the correlation plot to be sorted in
+# the same way in all the scripts.
+sort.pcorr <- order(rownames(pcorr))
+pcorr <- pcorr[sort.pcorr, sort.pcorr]
+###############################################################################
 
 # Show graphic results
 # (There are a lot of options for this plot)
