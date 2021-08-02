@@ -64,7 +64,7 @@ if (!exists('nlist')) {
 }
 
 # Source local files
-source('aux_functions.R')
+source('R/aux_functions.R')
 
 
 
