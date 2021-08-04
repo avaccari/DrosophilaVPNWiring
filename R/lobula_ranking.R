@@ -34,6 +34,9 @@
 
 #
 # TODO:
+# - For LPLC2 there might be the need to use 3 planes to remove:
+#   - somas
+#   - additional lobula layer
 
 # Import required libraries
 library(tidyverse)
@@ -59,14 +62,14 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("hemibrain_con0.rds")
+  con <- readRDS("data/hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("nlist1.rds")
+  nlist <- readRDS("data/nlist1.rds")
 }
 
 # Source local files
-source('aux_functions.R')
+source('R/aux_functions.R')
 
 
 
