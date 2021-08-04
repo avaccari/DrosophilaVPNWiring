@@ -25,18 +25,18 @@
 # Project on plane function
 plane.proj <- function(points, plane.normal, plane.offset) {
   dist <- as.matrix(points) %*% plane.normal
-  proj <- points - (dist - plane.offset) %*% plane.normal
+  proj <- points - (dist - plane.offset) %*% drop(plane.normal)
 }
 
 # Project on a line function
 line.proj <- function(points, line.unit.vector, origin) {
   transl <- sweep(points, 2, origin)
-  proj <- as.matrix(transl) %*% line.unit.vector
+  proj <- as.matrix(transl) %*% drop(line.unit.vector)
   proj <- sweep(drop(proj %o% line.unit.vector), 2, origin, FUN='+')
 }
 
 # Distance from the plane function
 plane.dist <- function(points, plane.normal, origin) {
   transl <- sweep(points, 2, origin)
-  dist <- as.matrix(transl) %*% plane.normal
+  dist <- as.matrix(transl) %*% drop(plane.normal)
 }
