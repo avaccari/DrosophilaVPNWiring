@@ -85,7 +85,7 @@ c(a, b, c, d) %<-% c(1, 0, 0, -9000)
 # best separating DNp02 from DNp11 synapses in the LC4 glomerulus. If all values
 # are zeros, the plane will be evaluated from the data: best plane separating
 # the synapses for the two items listed above.
-plane <- c(0.971986, -2.217776, 3.01801, 13742.1)
+plane <- c(0.251203, -0.5731687, 0.7799837, 13742.1)
 # plane <- c(0, 0, 0, 0)
 
 # Plot window size
@@ -142,7 +142,7 @@ if (all(plane == 0)) {
                   scale=FALSE)
 
   # Find the plane coefficients
-  w <- t(svm_model$coefs) %*% svm_model$SV
+  w <- c(t(svm_model$coefs) %*% svm_model$SV)
   w_mod <- sqrt(sum(w *w))
   w_norm <- w/w_mod
   w0 <- svm_model$rho/w_mod
@@ -154,7 +154,7 @@ if (all(plane == 0)) {
 }
 
 # Print the coefficients
-cat("Plane coefficients ax + by + cx + d = 0 (a, b, c, d):", w, w0)
+cat("Plane coefficients ax + by + cx + d = 0 (a, b, c, d):", w_norm, w0)
 
 # 3D analysis ----
 nopen3d()
