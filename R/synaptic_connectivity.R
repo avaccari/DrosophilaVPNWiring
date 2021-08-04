@@ -114,5 +114,3 @@ ggplot() +
         axis.title.x = element_text(size=18),
         strip.text = element_text(size = 13, face="bold"),
         strip.background = element_rect(fill="#33CCFF"))
-
-
