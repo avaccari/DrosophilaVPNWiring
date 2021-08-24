@@ -72,7 +72,7 @@ if (!exists('nlist')) {
 }
 
 # Source local files
-source('R/aux_functions.R')
+source("R/aux_functions.R")
 
 
 
@@ -97,7 +97,18 @@ evaluate_all <- TRUE
 
 # Define a plane separating lobula from glomerulus (it will be used to only
 # consider the lobulat in the analysis)
-c(a, b, c, d) %<-% c(1, 0, 0, -9000)  # This is ideal only for LC4
+# It is possible to identify multiple planes and which side of the plane should
+# be included.
+# The format is a matrix where each line is a plane. The first 4 values are the
+# a, b, c, and d of the plane and the fifth value specifies if we should 
+# preserve the synapse above (1) or below (-1) the plane.
+# Each plane is considered one after the other and the final result is the
+# intersection of the setes of synapses preserved by each plane.
+# E.g.
+# planes <- matrix(c(1, 0, 0, -11000, -1,
+#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
+planes <- matrix(c(1, 0, 0, -11000, 1), ncol=5, byrow=TRUE)
+
 
 # Plot window size
 win_siz <- 1000
@@ -113,10 +124,10 @@ win_siz <- 1000
 
 
 # Normalize the vector normal to the plane
-w <- c(a, b, c)
-w_mod <- sqrt(sum(w *w))
-w_norm <- w / w_mod
-w0 <- d
+# w <- c(a, b, c)
+# w_mod <- sqrt(sum(w *w))
+# w_norm <- w / w_mod
+# w0 <- d
 
 
 
@@ -125,15 +136,35 @@ w0 <- d
 pre <- con %>% 
   filter(pre.type==pre_type, post.type != pre_type)
 
-# Filter for glomerulus synapses
-pre.glo <- pre %>%
-  filter(pre %>%
+# Visualize all the synapses and the selection planes
+open3d()
+par3d('windowRect' = c(100, 100, win_siz, win_siz))
+pre_coors <- pre %>%
+             pull(post.coors) %>%
+             xyzmatrix()
+plot3d(pre_coors, size=1)
+for (i in 1:nrow(planes)) {
+  planes3d(a=planes[i, 1], b=planes[i, 2], c=planes[i, 3], d=planes[i, 4], alpha=0.2, add=TRUE)
+}
+
+# Filter for glomerulus synapses using all the planes
+pre.glo <- pre
+for (i in 1:nrow(planes)) {
+  pre.glo <- pre.glo %>%
+  filter(pre.glo %>%
            pull(post.coors) %>%
            xyzmatrix() %>%
            as_tibble() %>%
-           mutate(GLO = a*X + b*Y + c*Z + d > 0) %>%
+           mutate(GLO = planes[i, 5] * (planes[i, 1] * X + planes[i, 2] * Y + planes[i, 3] * Z + planes[i, 4]) > 0) %>%
            select(GLO))
+}
 
+# Show filtered synapses
+pre_kept <- pre.glo %>%
+            pull(post.coors) %>%
+            xyzmatrix()
+
+plot3d(pre_kept, col='green', size=3, add=TRUE)
 
 # Find the unique posts for a given pre
 all_posts <- unique(pre %>%
@@ -301,7 +332,7 @@ post.coors <- pre.glo %>%
 # Plot the construction of the mean plane
 open3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
-plot3d(post.coors, col='green', alpha=0.2)
+plot3d(post.coors, col='green', alpha=1)
 planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
 planes3d(a=mean_plane[1], b=mean_plane[2], c=mean_plane[3], d=-mean_plane[4], col='blue', add=TRUE)
 
@@ -314,7 +345,7 @@ plot3d(center[1], center[2], center[3], col='white', size=10, add=TRUE)
 
 # Draw the line perpendicular to the mean plane an passing by the center
 endpt <- rbind(center - 2000 * mean_plane[1:3], center + 2000 * mean_plane[1:3])
-lines3d(endpt[, 1], endpt[, 2], endpt[, 3], col='gray', lwd=3, add=TRUE)
+lines3d(endpt[, 1], endpt[, 2], endpt[, 3], col='black', lwd=5, add=TRUE)
 
 
 
@@ -476,8 +507,8 @@ corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
 # Plot the results
 ggplot() +
   xlim(-0.9, 0.9) +
-  ylim (0, 10)+
-  ylab("Distance between centroids in the glomerulus, mcm") +
+  ylim (0, 7)+
+  ylab("Distance between centroids in the glomerulus, um") +
   xlab("Glomerular connectivity correlation") +
   theme_classic()+
   geom_point(data=merged,
