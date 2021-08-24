@@ -40,10 +40,7 @@
 #   Since we do not care about the intercept, the method might just work without
 #   too many problems. Verify that the projection on the perpendicular makes
 #   sense and use that.
-# - Find if there is a way to optionally turn off the scales and the axes and 
-#   the boxes (also in glomerulus.R)
 # - Decide if we want to drop the planes where the SVM does not converge
-# - See if you can use the same scale for all the plots
 # - Code could be optimized by getting the various coordinates in a table and
 #   then use the loop just to extract needed columns
 
@@ -53,6 +50,7 @@ library(tidyverse)
 library(zeallot)
 library(natverse)
 library(e1071)
+library(corrplot)
 
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
@@ -85,7 +83,7 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
 top <- 20
@@ -109,7 +107,12 @@ evaluate_all <- TRUE
 # E.g.
 # planes <- matrix(c(1, 0, 0, -11000, -1,
 #                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
-planes <- matrix(c(1, 0, 0, -11000, 1), ncol=5, byrow=TRUE)
+# Known planes:
+# LPLC2
+planes <- matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE)
+#
+# LC4
+# planes <- matrix(c(1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
 
 
 # Plot window size
@@ -123,13 +126,6 @@ win_siz <- 1000
 
 
 
-
-
-# Normalize the vector normal to the plane
-# w <- c(a, b, c)
-# w_mod <- sqrt(sum(w *w))
-# w_norm <- w / w_mod
-# w0 <- d
 
 
 
@@ -307,10 +303,13 @@ for (c in 1:ncol(com)) {
   
   # Plot the next pair plot
   next3d()
-  plot3d(post1.coors, col='blue')
+  plot3d(post1.coors, col='blue', add=TRUE)
   plot3d(post2.coors, col='red', add=TRUE)
   planes3d(a=w_norm[1], b=w_norm[2], c=w_norm[3], d=-w0, add=TRUE, alpha=0.2)
-  legend3d('topright', legend=paste(p1, 'vs.', p2))
+  legend3d
+  axes3d(edges=c('x', 'y', 'z'),
+         tick=FALSE,
+         labels=FALSE)
 }
 
 
@@ -320,8 +319,10 @@ for (c in 1:ncol(com)) {
 
 # Projection line construction ----
 # Image to show how the final plane is evaluated
-# Calculate the mean plane
-mean_plane <- colMeans(ms)
+# Calculate the median plane and normalize
+med_plane <- colMedians(ms)
+med_plane_mod <- sqrt(sum(med_plane[1:3] * med_plane[1:3]))
+med_plane <- med_plane[1:3] / med_plane_mod
 
 # Find all the synapses for the evaluated posts
 # Extract pre synapses with post.type1
@@ -332,22 +333,26 @@ post.coors <- pre.glo %>%
   as_tibble()
 
 # Plot the construction of the mean plane
+# Since the offset of the plane is not relevant but we only care about the 
+# orientation of the normal, the plane is forced to pass through the centroid of
+# the synapses.
 open3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
-plot3d(post.coors, col='green', alpha=1)
-planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
-planes3d(a=mean_plane[1], b=mean_plane[2], c=mean_plane[3], d=-mean_plane[4], col='blue', add=TRUE)
-
-# Project on the synapses on the mean plane
-post.coors.proj.plane <- plane.proj(post.coors, mean_plane[1:3], mean_plane[4])
-
-# Find the centroid of all projections and plot
-center <- colMeans(post.coors.proj.plane)
+plot3d(post.coors, col='green', alpha=1, add=TRUE)
+center <- colMeans(post.coors)
 plot3d(center[1], center[2], center[3], col='white', size=10, add=TRUE)
+offset <- center %*% med_plane[1:3]
+planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
+planes3d(a=med_plane[1], b=med_plane[2], c=med_plane[3], d=-offset, col='blue', add=TRUE)
 
 # Draw the line perpendicular to the mean plane an passing by the center
-endpt <- rbind(center - 2000 * mean_plane[1:3], center + 2000 * mean_plane[1:3])
+endpt <- rbind(center - 2000 * med_plane[1:3], center + 2000 * med_plane[1:3])
 lines3d(endpt[, 1], endpt[, 2], endpt[, 3], col='black', lwd=5, add=TRUE)
+
+# Add axes
+axes3d(edges=NULL,
+       tick=FALSE,
+       labels=FALSE)
 
 
 
@@ -388,10 +393,14 @@ for (c in 1:ncol(com)) {
   
   # Plot the next pair plot
   next3d()
-  plot3d(post1.coors, col='blue')
+  plot3d(post1.coors, col='blue', add=TRUE)
   plot3d(post2.coors, col='red', add=TRUE)
-  planes3d(a=mean_plane[1], b=mean_plane[2], c=mean_plane[3], d=-mean_plane[4], add=TRUE, alpha=0.2)
+  planes3d(a=med_plane[1], b=med_plane[2], c=med_plane[3], d=-offset, add=TRUE, alpha=0.2)
   legend3d('topright', legend=paste(p1, 'vs.', p2))
+  axes3d(edges=c('x', 'y', 'z'),
+         tick=FALSE,
+         labels=FALSE)
+  
 }
 
 
@@ -400,12 +409,6 @@ for (c in 1:ncol(com)) {
 
 
 # Second round of projections ----
-# Calculate the median plane.
-# This results in a plane with a weird offset but the offset is irrelevant since
-# we are projecting along the perpendicular to the plane and the median is an
-# estimator more robust to outliers
-med_plane <- colMedians(ms)
-
 # Create an empty matrix to store the results
 dist_mtrx <- matrix(nrow=top, ncol=top)
 rownames(dist_mtrx) <- c(top_posts)
