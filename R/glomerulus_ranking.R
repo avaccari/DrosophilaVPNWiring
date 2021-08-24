@@ -6,6 +6,8 @@
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
 # Generates:
+# - A 3d plot identifying which synapses for a given post are considered in the
+#   analysis based on the selection planes
 # - A set of 3d plots displaying the evaluated optimal plane for each post pair
 # - A 3d plot showing how the median plane is evaluated
 # - A set of 3d plots displaying the different pairs in relation to the median
