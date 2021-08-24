@@ -35,8 +35,7 @@
 
 #
 # TODO:
-# - Evaluate distance in physical coordinates (assuming: 8x8x8 nm^3 voxels
-#   Needs verification)
+#
 
 # Import required libraries
 library(tidyverse)
@@ -161,7 +160,7 @@ nopen3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
 
 # Plot synapses
-plot3d(post1.coors, col='blue')
+plot3d(post1.coors, col='blue', add=TRUE)
 plot3d(post2.coors, col='red', add=TRUE)
 
 # Create 3d plane
@@ -187,6 +186,14 @@ plot3d(post2.coors.proj.line, col='orange', add=TRUE)
 # Draw the line perpendicular to the plane an passing by the center
 endpt <- rbind(center - 2000 * w_norm, center + 2000 * w_norm)
 lines3d(endpt[, 1], endpt[, 2], endpt[, 3], col='gray', add=TRUE)
+
+# Add axes
+axes3d(edges=NULL,
+       tick=FALSE,
+       labels=FALSE)
+
+
+
 
 # 2D analysis ----
 # Project on 1D line (x-axis)
