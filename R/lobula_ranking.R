@@ -6,6 +6,8 @@
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
 # Generates:
+# - A 3d plot identifying which end points for a given pre are considered in the
+#   analysis based on the selection planes (projection plane is shown in blue)
 # - A plot showing the segments connecting the weighted centroids of the top 
 #   anti-parallel posts and the evaluated separationa and projection lines
 # - A plot showing the midpoints of the segments above and the evaluated 
@@ -34,9 +36,10 @@
 
 #
 # TODO:
-# - For LPLC2 there might be the need to use 3 planes to remove:
-#   - somas
-#   - additional lobula layer
+# - Add visualization of preserved endpoints just like for the glomerulus
+#   black for all and green for preserved
+# - Add the code that allows to use multiple planes
+# - Find the plane(s) that will work for LPLC2
 
 # Import required libraries
 library(tidyverse)
@@ -80,7 +83,7 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
 top <- 20
@@ -94,7 +97,32 @@ evaluate_all <- TRUE
 
 # Define a plane separating lobula from glomerulus (it will be used to only
 # consider the lobulat in the analysis)
-c(a, b, c, d) %<-% c(0.5, 0.37, -0.19, -5200)  # Original -5200; Above somas: -7000
+# It is possible to identify multiple planes and which side of the plane should
+# be included.
+# The format is a matrix where each line is a plane. The first 4 values are the
+# a, b, c, and d of the plane and the fifth value specifies if we should 
+# preserve the synapse above (1) or below (-1) the plane.
+# Each plane is considered one after the other and the final result is the
+# intersection of the setes of synapses preserved by each plane.
+#
+# NOTE: the FIRST plane specified is also use as projection plane
+#
+# E.g.
+# planes <- matrix(c(1, 0, 0, -11000, -1,
+#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
+# Known planes:
+# LC4
+# planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE)  # Original -5200; Above somas: -7000
+#
+# LPLC2
+planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
+                   0.7687760,  0.5688942, -0.2921349, -1000, -1,
+                   0.7687760,  0.5688942, -0.8921349, 6300, 1),
+                 ncol=5, byrow=TRUE)
+
+# Plot window size
+win_siz <- 1000
+
 ###############################################################################
 
 
@@ -104,10 +132,10 @@ c(a, b, c, d) %<-% c(0.5, 0.37, -0.19, -5200)  # Original -5200; Above somas: -7
 
 
 # Normalize the vector normal to the plane
-w <- c(a, b, c)
+w <- planes[1, 1:3]
 w_mod <- sqrt(sum(w *w))
 w_norm <- w / w_mod
-w0 <- d
+w0 <- planes[4]
 
 
 
@@ -150,20 +178,45 @@ all_body_IDs <- all_posts_cnt[['pre.bodyID']]
 # Get the list of all neurons defined by pre
 all_nlist <- nlist[as.character(all_body_IDs)]
 
+# Display all the neurons defined by pre
+open3d()
+par3d('windowRect' = c(100, 100, win_siz, win_siz))
+
+# Add neuron skeletons (to visualize the somas)
+plot3d(all_nlist, soma=TRUE, col='light gray', add=TRUE)
+
+# Show all endpoints
+for (i in 1:length(all_nlist)) {
+  neu <- all_nlist[[i]]
+  ep <- neu$d[neu$EndPoints, ] %>%
+    select(X, Y, Z)
+  plot3d(ep, col='black', size=1, add=TRUE)
+}
+
+# and the planes
+planes3d(a=planes[1, 1], b=planes[1, 2], c=planes[1, 3], d=planes[1, 4], col='blue', alpha=0.2, add=TRUE)
+planes3d(a=planes[-1, 1], b=planes[-1, 2], c=planes[-1, 3], d=planes[-1, 4], alpha=0.2, add=TRUE)
+
 # Select preserved end points for each neuron
 for (i in 1:length(all_nlist)) {
   neu <- all_nlist[[i]]
   ep <- neu$d[neu$EndPoints, ]
-  pts <- ep %>%
-    mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
-    filter(LO < 0) %>%
-    select(X, Y, Z)
+  pts <- ep
+  for (p in 1:nrow(planes)) {
+    pts <- pts %>%
+      mutate(LO = planes[p, 5] * (planes[p, 1] * X + planes[p, 2] * Y + planes[p, 3] * Z + planes[p, 4])) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+  }
   if (i == 1) {
     end_pts <- pts
   } else {
     end_pts <- rbind(end_pts, pts)
   }
 }
+
+# Show the preserved points
+plot3d(end_pts, col='green', size=3, add=TRUE)
 
 # Project the preserved end points on the plane.
 end_pts.proj <- plane.proj(end_pts, w_norm, -w0)
@@ -189,10 +242,14 @@ unitX <- - pointX / sqrt(sum(pointX * pointX))
 # Calculate centroid of lobula end points
 for (i in 1:length(all_nlist)) {
   neu <- all_nlist[[i]]
-  pts <- neu$d[neu$EndPoints, ] %>%
-    mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
-    filter(LO < 0) %>%
-    select(X, Y, Z) %>%
+  pts <- neu$d[neu$EndPoints, ]
+  for (p in 1:nrow(planes)) {
+    pts <- pts %>%
+      mutate(LO = planes[p, 5] * (planes[p, 1] * X + planes[p, 2] * Y + planes[p, 3] * Z + planes[p, 4])) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+  }
+  pts <- pts %>%
     colMeans()
   if (i == 1) {
     ctrs <- pts
@@ -200,6 +257,9 @@ for (i in 1:length(all_nlist)) {
     ctrs <- rbind(ctrs, pts)
   }
 }
+
+# SHow in red on the 3d plot
+plot3d(ctrs, col='red', size=5, add=TRUE)
 
 # Turn into a dataframe
 ctrs <- data.frame(ctrs)
@@ -400,11 +460,11 @@ lo <- chull(end_pts.proj)
 # Segments connecting the weighted centroids
 ggplot() +
   coord_fixed() +
-  xlab('A-P axis, mcm') +
-  ylab('D-V axis, mcm') +
+  xlab('A-P axis, um') +
+  ylab('D-V axis, um') +
   geom_polygon(data=end_pts.plane[lo, ],
                aes(x=0.008 * X1, y=0.008 * X2),
-               alpha=0.4) +
+               alpha=0.3) +
   geom_point(data=ctrs,
              aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
@@ -426,7 +486,12 @@ ggplot() +
               aes(slope=X2, intercept=0.008 * X1),
               color='blue', size=2) +
   ggtitle('Segments connectring weighted centroids (red)\n Median separation line (solid blue)\n Projection line (dashed blue)') +
-  theme(plot.title=element_text(hjust=0.5))
+  theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=13, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=13, angle=0))+
+  theme(axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
+
 
 # Midpoints of the segments
 #ggplot() +
@@ -459,32 +524,33 @@ ggplot() +
 # Lines containing the segments
 ggplot() +
   coord_fixed() +
-  xlab('A-P axis, mcm') +
-  ylab('D-V axis, mcm') +
+  xlab('A-P axis, um') +
+  ylab('D-V axis, um') +
   geom_polygon(data=end_pts.plane[lo, ],
                aes(x=0.008 * X1, y=0.008 * X2),
-               alpha=0.4) +
+               alpha=0.3) +
   geom_point(data=ctrs,
              aes(x=0.008 * X.plane, y=0.008 * Y.plane),
              shape=1) +
   geom_abline(data=ms,
               aes(slope=X4, intercept=0.008 * X3),
-              color='red', size=1) +
+              color='red', size=1.5) +
   geom_point(data=data.frame(t(origin)),
              aes(x=0.008 * X1, y=0.008 * X2),
              color='#0000ff') +
   geom_abline(data=data.frame(t(med)),
               aes(slope=X4, intercept=0.008 * X3),
-              color="blue", size=1,
+              color="blue", size=1.5,
               linetype='dashed') +
   geom_abline(data=data.frame(t(c(per_intr, per_coef))),
               aes(slope=X2, intercept=0.008 * X1),
               color='blue', size=2) +
   ggtitle('Lines connectring weighted centroids (red)\n median line (solid blue)\n projection line (dashed blue)') +
-  theme(plot.title=element_text(hjust=0.5))
-
-
-
+  theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=13, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=13, angle=0))+
+  theme(axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
 
 
 
@@ -591,7 +657,7 @@ corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
 # Plot the results
 ggplot() +
   xlim(-0.9, 0.9) +
-  ylim (0,40)+
+  ylim (0,50)+
   ylab("Distance between centroids in the lobula, mcm") +
   xlab("Glomerular connectivity correlation") +
   theme_classic()+
