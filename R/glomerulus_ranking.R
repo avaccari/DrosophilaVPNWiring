@@ -6,7 +6,7 @@
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
 # Generates:
-# - A 3d plot identifying which synapses for a given post are considered in the
+# - A 3d plot identifying which synapses for a given pre are considered in the
 #   analysis based on the selection planes
 # - A set of 3d plots displaying the evaluated optimal plane for each post pair
 # - A 3d plot showing how the median plane is evaluated
@@ -114,7 +114,6 @@ planes <- matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE)
 # LC4
 # planes <- matrix(c(1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
 
-
 # Plot window size
 win_siz <- 1000
 ###############################################################################
@@ -137,13 +136,18 @@ pre <- con %>%
 # Visualize all the synapses and the selection planes
 open3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
+
+# Add neuron skeletons (to visualize the somas)
+plot3d(nlist[as.character(unique(pre %>% pull(pre.bodyID)))], soma=TRUE, col='light gray', add=TRUE)
+
+# Add the synapses
 pre_coors <- pre %>%
              pull(post.coors) %>%
              xyzmatrix()
-plot3d(pre_coors, size=1)
-for (i in 1:nrow(planes)) {
-  planes3d(a=planes[i, 1], b=planes[i, 2], c=planes[i, 3], d=planes[i, 4], alpha=0.2, add=TRUE)
-}
+plot3d(pre_coors, size=1, add=TRUE)
+
+# and the planes
+planes3d(a=planes[, 1], b=planes[, 2], c=planes[, 3], d=planes[, 4], alpha=0.2, add=TRUE)
 
 # Filter for glomerulus synapses using all the planes
 pre.glo <- pre
