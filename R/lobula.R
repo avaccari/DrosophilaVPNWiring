@@ -58,14 +58,14 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("hemibrain_con0.rds")
+  con <- readRDS("data/hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("nlist1.rds")
+  nlist <- readRDS("data/nlist1.rds")
 }
 
 # Source local files
-source('aux_functions.R')
+source('R/aux_functions.R')
 
 
 
@@ -82,7 +82,29 @@ post_type2 <- 'DNp11'  # Blue
 
 # Define a plane separating lobula from glomerulus (it will be used to only
 # consider the lobulat in the analysis)
-c(a, b, c, d) %<-% c(0.5, 0.37, -0.19, -5200)  # Original -5200; Above somas: -7000
+# It is possible to identify multiple planes and which side of the plane should
+# be included.
+# The format is a matrix where each line is a plane. The first 4 values are the
+# a, b, c, and d of the plane and the fifth value specifies if we should 
+# preserve the synapse above (1) or below (-1) the plane.
+# Each plane is considered one after the other and the final result is the
+# intersection of the setes of synapses preserved by each plane.
+#
+# NOTE: the FIRST plane specified is also use as projection plane
+#
+# E.g.
+# planes <- matrix(c(1, 0, 0, -11000, -1,
+#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
+# Known planes:
+# LC4
+planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE)  # Original -5200; Above somas: -7000
+#
+# LPLC2
+# planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
+#                    0.7687760,  0.5688942, -0.2921349, -1000, -1,
+#                    0.7687760,  0.5688942, -0.8921349, 6300, 1),
+#                  ncol=5, byrow=TRUE)
+
 
 # Using perceptually uniform color map
 # More options here:
@@ -103,10 +125,8 @@ win_siz <- 500
 
 
 # Normalize the vector normal to the plane
-w <- c(a, b, c)
-w_mod <- sqrt(sum(w *w))
-w_norm <- w / w_mod
-w0 <- d
+w_norm <- planes[1, 1:3]
+w0 <- planes[1, 4]
 
 # Pre ----
 # Extract all pre.type synapses
@@ -142,42 +162,49 @@ n_list <- nlist[as.character(post$pre.bodyID)]
 nopen3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
 
-# Grab the coordinates of the end points of the neurons which are on the lobula
-# side of the plane
-# Plot the exluded points in gray
+# Add neuron skeletons (to visualize the somas)
+plot3d(n_list, soma=TRUE, col='light gray', add=TRUE)
+
+# Show all endpoints
+for (i in 1:length(n_list)) {
+  neu <- n_list[[i]]
+  ep <- neu$d[neu$EndPoints, ] %>%
+    select(X, Y, Z)
+  plot3d(ep, col='black', size=1, add=TRUE)
+}
+
+
+# and the planes
+planes3d(a=planes[1, 1], b=planes[1, 2], c=planes[1, 3], d=planes[1, 4], col='blue', alpha=0.2, add=TRUE)
+planes3d(a=planes[-1, 1], b=planes[-1, 2], c=planes[-1, 3], d=planes[-1, 4], alpha=0.2, add=TRUE)
+
+# Select preserved end points for each neuron
 for (i in 1:length(n_list)) {
   neu <- n_list[[i]]
   ep <- neu$d[neu$EndPoints, ]
-  pts <- ep %>%
-         mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
-         filter(LO >= 0) %>%
-         select(X, Y, Z)
+  pts <- ep
+  for (p in 1:nrow(planes)) {
+    pts <- pts %>%
+      mutate(LO = planes[p, 5] * (planes[p, 1] * X + planes[p, 2] * Y + planes[p, 3] * Z + planes[p, 4])) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+  }
   if (i == 1) {
     end_pts <- pts
   } else {
     end_pts <- rbind(end_pts, pts)
   }
 }
-plot3d(end_pts, col='gray', size=1)
 
-# Plot the preserved points in red
-for (i in 1:length(n_list)) {
-  neu <- n_list[[i]]
-  ep <- neu$d[neu$EndPoints, ]
-  pts <- ep %>%
-         mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
-         filter(LO < 0) %>%
-         select(X, Y, Z)
-  if (i == 1) {
-    end_pts <- pts
-  } else {
-    end_pts <- rbind(end_pts, pts)
-  }
-}
-plot3d(end_pts, col='red', size=1, add=TRUE)
+# Show the preserved points
+plot3d(end_pts, col='green', size=3, add=TRUE)
 
-# Plot the separating plane
-planes3d(a=w_norm[1], b=w_norm[2], c=w_norm[3], d=w0, add=TRUE)
+
+
+
+
+
+
 
 # Project the preserved end points on the plane in yellow. The convex hull of
 # these points define the lobula we are analyzing.
@@ -188,14 +215,18 @@ plot3d(end_pts.proj, col='yellow', size=1, add=TRUE)
 center <- colMeans(end_pts.proj)
 plot3d(center[1], center[2], center[3], col='white', size=10, add=TRUE)
 
-# Calculate centroid of lobula end points and plot in blue
+# Calculate centroid of lobula end points and plot in red
 for (i in 1:length(n_list)) {
   neu <- n_list[[i]]
-  pts <- neu$d[neu$EndPoints, ] %>%
-         mutate(LO = w_norm[1]*X + w_norm[2]*Y + w_norm[3]*Z + w0) %>%
-         filter(LO < 0) %>%
-         select(X, Y, Z) %>%
-         colMeans()
+  pts <- neu$d[neu$EndPoints, ]
+  for (p in 1:nrow(planes)) {
+    pts <- pts %>%
+      mutate(LO = planes[p, 5] * (planes[p, 1] * X + planes[p, 2] * Y + planes[p, 3] * Z + planes[p, 4])) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+  }
+  pts <- pts %>%
+    colMeans()
   if (i == 1) {
     ctrs <- pts
   } else {
@@ -209,11 +240,11 @@ rownames(ctrs) <- post$pre.bodyID
 # Clear rows with NaN
 ctrs <- ctrs[!is.na(ctrs[, 1]), ]
 
-plot3d(ctrs, col='blue', size=10, add=TRUE)
+plot3d(ctrs, col='red', size=5, add=TRUE)
 
-# Project the centroid of the end points on the surface in green
+# Project the centroid of the end points on the surface in blue
 ctrs.proj <- plane.proj(ctrs, w_norm, -w0)
-plot3d(ctrs.proj, col='green', size=10, add=TRUE)
+plot3d(ctrs.proj, col='blue', size=5, add=TRUE)
 
 # 2D analysis ----
 # Define coordinate system in the plane
