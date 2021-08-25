@@ -100,8 +100,9 @@ evaluate_all <- TRUE
 # It is possible to identify multiple planes and which side of the plane should
 # be included.
 # The format is a matrix where each line is a plane. The first 4 values are the
-# a, b, c, and d of the plane and the fifth value specifies if we should 
-# preserve the synapse above (1) or below (-1) the plane.
+# a, b, c, and d of the plane (with a, b, and c identifying the normal to the
+# plane and d the offset) and the fifth value specifies if we should preserve 
+# the synapse above (1) or below (-1) the plane.
 # Each plane is considered one after the other and the final result is the
 # intersection of the setes of synapses preserved by each plane.
 #
@@ -132,10 +133,8 @@ win_siz <- 1000
 
 
 # Normalize the vector normal to the plane
-w <- planes[1, 1:3]
-w_mod <- sqrt(sum(w *w))
-w_norm <- w / w_mod
-w0 <- planes[4]
+w_norm <- planes[1, 1:3]
+w0 <- planes[1, 4]
 
 
 
