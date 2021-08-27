@@ -36,10 +36,7 @@
 
 #
 # TODO:
-# - Add visualization of preserved endpoints just like for the glomerulus
-#   black for all and green for preserved
-# - Add the code that allows to use multiple planes
-# - Find the plane(s) that will work for LPLC2
+#
 
 # Import required libraries
 library(tidyverse)
@@ -95,31 +92,9 @@ anti_threshold <- -0.5  # Max threshold allowed in gradient correlation
 # Evaluate correlation matrix for all post pairs
 evaluate_all <- TRUE
 
-# Define a plane separating lobula from glomerulus (it will be used to only
-# consider the lobulat in the analysis)
-# It is possible to identify multiple planes and which side of the plane should
-# be included.
-# The format is a matrix where each line is a plane. The first 4 values are the
-# a, b, c, and d of the plane (with a, b, and c identifying the normal to the
-# plane and d the offset) and the fifth value specifies if we should preserve 
-# the synapse above (1) or below (-1) the plane.
-# Each plane is considered one after the other and the final result is the
-# intersection of the setes of synapses preserved by each plane.
-#
+# Grab the correct plane
 # NOTE: the FIRST plane specified is also use as projection plane
-#
-# E.g.
-# planes <- matrix(c(1, 0, 0, -11000, -1,
-#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
-# Known planes:
-# LC4
-# planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE)  # Original -5200; Above somas: -7000
-#
-# LPLC2
-planes <- matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                   0.7687760,  0.5688942, -0.2921349, -1000, -1,
-                   0.7687760,  0.5688942, -0.8921349, 6300, 1),
-                 ncol=5, byrow=TRUE)
+planes <- get.plane(pre_type, 'lobula')
 
 # Plot window size
 win_siz <- 1000
