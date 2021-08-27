@@ -83,7 +83,7 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LPLC2'
+pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
 top <- 20
@@ -95,24 +95,8 @@ anti_threshold <- -0.5  # Max threshold allowed in gradient correlation
 # Evaluate correlation matrix for all post pairs
 evaluate_all <- TRUE
 
-# Define a plane separating lobula from glomerulus (it will be used to only
-# consider the lobulat in the analysis)
-# It is possible to identify multiple planes and which side of the plane should
-# be included.
-# The format is a matrix where each line is a plane. The first 4 values are the
-# a, b, c, and d of the plane and the fifth value specifies if we should 
-# preserve the synapse above (1) or below (-1) the plane.
-# Each plane is considered one after the other and the final result is the
-# intersection of the setes of synapses preserved by each plane.
-# E.g.
-# planes <- matrix(c(1, 0, 0, -11000, -1,
-#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
-# Known planes:
-# LPLC2
-planes <- matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE)
-#
-# LC4
-# planes <- matrix(c(1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
+# Grab the correct plane
+planes <- get.plane(pre_type, 'glomerulus')
 
 # Plot window size
 win_siz <- 1000
