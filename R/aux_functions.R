@@ -40,3 +40,40 @@ plane.dist <- function(points, plane.normal, origin) {
   transl <- sweep(points, 2, origin)
   dist <- as.matrix(transl) %*% drop(plane.normal)
 }
+
+# Get plane
+# Define two set o planes: one to identify the region to be considered lobula
+# and one to identify the region to be considered glomerulus.
+# It is possible to identify multiple planes and which side of the plane should
+# be included.
+# The format is a matrix where each line is a plane. The first 4 values are the
+# a, b, c, and d of the plane (with a, b, and c identifying the normal to the
+# plane and d the offset) and the fifth value specifies if we should preserve 
+# the synapse above (1) or below (-1) the plane.
+# Each plane is considered one after the other and the final result is the
+# intersection of the setes of synapses preserved by each plane.
+# E.g.
+# planes <- matrix(c(1, 0, 0, -11000, -1,
+#                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
+get.plane <- function(pre='LC4', type='glomerulus') {
+  if (type=='glomerulus' | type=='glo') {
+    switch(
+      pre,
+      'LC4' = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol=5, byrow=TRUE),
+      'LPLC2' = matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE),
+      'LC12' = matrix(c(0.7687760,  0.5688942, -0.2921349, -7200, 1,
+                        0.7687760,  0.5688942, -0.2921349, -11200, -1), ncol=5, byrow=TRUE),
+      'LC22' = matrix(c(1, 0, 0, -12500, 1), ncol=5, byrow=TRUE))
+  } else if (type=='lobula' | type=='lob') {
+    switch(
+      pre,
+      'LC4' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE),
+      'LPLC2' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
+                         0.7687760,  0.5688942, -0.2921349, -1000, -1,
+                         0.7687760,  0.5688942, -0.8921349, 6300, 1), ncol=5, byrow=TRUE),
+      'LC12' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE),
+      'LC22' = matrix(c(0.7687760,  0.5688942, -0.3921349, -3200, 1), ncol=5, byrow=TRUE))
+  } else {
+    print('Plane undefined!\n')
+  }
+}
