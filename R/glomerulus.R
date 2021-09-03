@@ -76,9 +76,8 @@ pre_type <- 'LC4'
 post_type1 <- 'DNp02' # Blue
 post_type2 <- 'DNp11' # Red
 
-# Define a plane separating lobula from glomerulus (it will be used to only
-# consider the glomerulus in the analysis)
-c(a, b, c, d) %<-% c(1, 0, 0, -9000)
+# Grab the correct plane
+planes <- get.plane(pre_type, 'glomerulus')
 
 # Define the separation plane to use in the analysis. The default is the plane
 # best separating DNp02 from DNp11 synapses in the LC4 glomerulus. If all values
@@ -102,13 +101,17 @@ win_siz <- 500
 pre <- con %>% filter(pre.type==pre_type)
 
 # Filter for glomerulus synapses
-pre.glo <- pre %>%
-           filter(pre %>%
-                  pull(post.coors) %>%
-                  xyzmatrix() %>%
-                  as_tibble() %>%
-                  mutate(GLO = a*X + b*Y + c*Z + d > 0) %>%
-                  select(GLO))
+pre.glo <- pre
+for (i in 1:nrow(planes)) {
+  pre.glo <- pre.glo %>%
+    filter(pre.glo %>%
+             pull(post.coors) %>%
+             xyzmatrix() %>%
+             as_tibble() %>%
+             mutate(GLO = planes[i, 5] * (planes[i, 1] * X + planes[i, 2] * Y + planes[i, 3] * Z + planes[i, 4]) > 0) %>%
+             select(GLO))
+}
+
 
 # Extract pre synapses with post.type1
 post1 <- pre.glo %>% filter(post.type==post_type1)
