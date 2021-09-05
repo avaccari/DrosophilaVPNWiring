@@ -29,6 +29,12 @@
 #   iterating, but the current version allows to select specific neurons to
 #   visualize.
 # - Computazion of distances can be optimized as well.
+# - project on the usual plane for the lobula and try those distances
+# - try to do separately DV and AP using just the AP and DV coordinates (start with LC4)
+# - add kendall tau or spearman for teh sorted distances
+# - check if it is worth ordering the pairs in the glomerulus correlation plot 
+#   as those in the lobula
+# - check what is going on with LC9 and LC10
 
 
 # ******************************
@@ -58,6 +64,7 @@
 # ******************************
 
 
+
 # Import required libraries
 library(tidyverse)
 library(natverse)
@@ -67,6 +74,8 @@ library(ks)
 library(matrixStats)
 library(egg)
 library(corrplot)
+library(aricode)
+
 
 
 # Clean everything up ----
@@ -100,7 +109,7 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC22'
+pre_type <- 'LPLC4'
 
 # Get the correct planes
 lob_planes <- get.plane(pre_type, 'lobula')
@@ -316,6 +325,25 @@ glo_dist_mtrx_n <- glo_dist_mtrx / max(glo_dist_mtrx)
 dist_df$lob.dist.n <- dist_df$lob.dist / max(dist_df$lob.dist)
 dist_df$glo.dist.n <- dist_df$glo.dist / max(dist_df$glo.dist)
 
+# Evaluate the correlation between the two
+corr <- cor(c(dist_df$lob.dist), c(dist_df$glo.dist), method='pearson', use='complete.obs')
+
+# Evaluate the normalized mutual information
+nmi <- NMI(round(dist_df$lob.dist), round(dist_df$glo.dist))
+
+# Evaluate the Spearman's coefficient
+spear <- cor(c(dist_df$lob.dist), c(dist_df$glo.dist), method='spearman', use='complete.obs')
+
+# Evaluate the Kendall's coefficient
+tau <- cor(c(dist_df$lob.dist), c(dist_df$glo.dist), method='kendall', use='complete.obs')
+
+# Print coefficients
+cat(paste(pre_type, ':\n'))
+cat(' Correlation coefficient (Pearson):', corr, '\n')
+cat(' Normalized Mutual Information:', nmi, '\n')
+cat(' Correlation coefficient (Spearman):', spear, '\n')
+cat(' Correlation coefficient (Kendall):', tau, '\n')
+
 # Plot the correlation matrices
 corrplot(lob_dist_mtrx_n,
   is.corr=FALSE,  # It is not a correlation matrix
@@ -339,8 +367,6 @@ corrplot(glo_dist_mtrx_n,
   # diag=FALSE,  # No diagonal
   tl.col='black')  # Color of the labels in black
 
-# Evaluate the correlation between the two
-corr <- cor(c(dist_df$lob.dist), c(dist_df$glo.dist), method='pearson')
 
 # Plot the correlation
 ggplot() +
