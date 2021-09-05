@@ -285,23 +285,23 @@ top_posts <- pre %>%
 # Evaluate the combinations of the top posts
 com_full <- combn(top_posts, 2)
 
+# Extract top posts and their counts
+posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
+
+# Evaluate the Pearson's correlation matrix
+pcorr <- cor(posts, method="pearson", use="complete.obs")
+
+# convert to data frame with the results and write each pair as a row entry
+ut <- upper.tri(pcorr)
+pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
+                       column=rownames(pcorr)[col(pcorr)[ut]],
+                       cor=(pcorr)[ut])
+
+# Sort the data on the correlation values
+pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
+
 # If only using anti-parallel to evaluate projection line, extract the info
 if (use_anti == TRUE) {
-  # Extract top posts and their counts
-  posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
-  
-  # Evaluate the Pearson's correlation matrix
-  pcorr <- cor(posts, method="pearson", use="complete.obs")
-  
-  # convert to data frame with the results and write each pair as a row entry
-  ut <- upper.tri(pcorr)
-  pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
-                         column=rownames(pcorr)[col(pcorr)[ut]],
-                         cor=(pcorr)[ut])
-
-  # Sort the data on the correlation values
-  pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
-  
   # Extract the anticorrelated pairs below the threshold
   com <- t(as.matrix(pcorr_df %>%
                        filter(cor < anti_threshold) %>%
@@ -309,9 +309,6 @@ if (use_anti == TRUE) {
 } else {
   # Evaluate all possible combinations without repetition
   com <- com_full
-
-    # Evaluate the Pearson's correlation matrix
-  pcorr <- cor(all_posts_cht, method="pearson", use="complete.obs")
 }
 
 
