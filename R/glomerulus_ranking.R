@@ -192,22 +192,23 @@ top_posts <- pre %>%
 # Evaluate the combinations of the top posts
 com_full <- combn(top_posts, 2)
 
+# Extract top posts and their counts
+posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
+
+# Evaluate the Pearson's correlation matrix
+pcorr <- cor(posts, method="pearson", use="complete.obs")
+
+# convert to data frame with the results and write each pair as a row entry
+ut <- upper.tri(pcorr)
+pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
+                       column=rownames(pcorr)[col(pcorr)[ut]],
+                       cor=(pcorr)[ut])
+
+# Sort the data on the correlation values
+pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
+
 # If only using anti-parallel to evaluate projection line, extract the info
 if (use_anti == TRUE) {
-  # Extract top posts and their counts
-  posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
-  
-  # Evaluate the Pearson's correlation matrix
-  pcorr <- cor(posts, method="pearson", use="complete.obs")
-  
-  # convert to data frame with the results and write each pair as a row entry
-  ut <- upper.tri(pcorr)
-  pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
-                         column=rownames(pcorr)[col(pcorr)[ut]],
-                         cor=(pcorr)[ut])
-  
-  # Sort the data on the correlation values
-  pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
   
   # Extract the anticorrelated pairs below the threshold
   com <- t(as.matrix(pcorr_df %>%
@@ -216,9 +217,6 @@ if (use_anti == TRUE) {
 } else {
   # Evaluate all possible combinations without repetition
   com <- com_full
-  
-  # Evaluate the Pearson's correlation matrix
-  pcorr <- cor(all_posts_cht, method="pearson", use="complete.obs")
 }
 
 
@@ -235,7 +233,7 @@ ms <- matrix(nrow=ncol(com), ncol=4)
 open3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
 cols <- ceiling(sqrt(ncol(com)))
-rows <- floor(ncol(com)/cols)
+rows <- ceiling(ncol(com)/cols)
 mfrow3d(rows, cols, sharedMouse=TRUE)
 
 # Evaluate each pair
@@ -312,6 +310,7 @@ med_plane <- colMedians(ms)
 med_plane_mod <- sqrt(sum(med_plane[1:3] * med_plane[1:3]))
 med_plane <- med_plane[1:3] / med_plane_mod
 
+
 # Find all the synapses for the evaluated posts
 # Extract pre synapses with post.type1
 post.coors <- pre.glo %>% 
@@ -333,6 +332,10 @@ offset <- center %*% med_plane[1:3]
 planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
 planes3d(a=med_plane[1], b=med_plane[2], c=med_plane[3], d=-offset, col='blue', add=TRUE)
 
+# Show the median plane equation
+# Print the coefficient
+cat("\nMedian plane coefficients ax + by + cx + d = 0 (a, b, c, d):", med_plane[1:3], offset, '\n')
+
 # Draw the line perpendicular to the mean plane an passing by the center
 endpt <- rbind(center - 2000 * med_plane[1:3], center + 2000 * med_plane[1:3])
 lines3d(endpt[, 1], endpt[, 2], endpt[, 3], col='black', lwd=5, add=TRUE)
@@ -352,7 +355,7 @@ axes3d(edges=NULL,
 open3d()
 par3d('windowRect' = c(100, 100, win_siz, win_siz))
 cols <- ceiling(sqrt(ncol(com)))
-rows <- floor(ncol(com)/cols)
+rows <- ceiling(ncol(com)/cols)
 mfrow3d(rows, cols, sharedMouse=TRUE)
 
 # Evaluate each pair
