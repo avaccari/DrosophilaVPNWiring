@@ -13,7 +13,6 @@
 #   also shows the weighted median (and weighted box plots) for the centers of
 #   mass (weighted by the number of synapses with pre)
 # - A 2d plot showing the distance between the weighted medians (two versions).
-# - A 2d plot showing how the distance between the centroids is calculated.
 #
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -98,7 +97,7 @@ c_size_both <- 100  # Number of colors in the map
 # The coefficients for a specific VPN can be found running the
 # lobula_ranking.R script.
 # If all zeros, the figure will not be generated.
-proj_v <- c(861.5319, -0.364655)
+proj_v <- c(983.6229896,  -0.5838685)  # Top25 for LC4
 # proj_v <- c(0, 0)
 
 # Plot window size
@@ -464,68 +463,6 @@ ggplot() +
         axis.title.x = element_text(size=15))
 
 
-ggplot() +
-  geom_violin(data=ctrs.plane,
-              aes(x=0.008 * X1, 
-                  y=matrix(0, 1, length(X1)),
-                  weight=n.post1),
-              color='blue',
-              trim=FALSE) +
-  geom_rug(data=ctrs.plane,
-           aes(x=0.008 *X1, 
-               y=matrix(0, 1, length(X1))),
-           color='blue',
-           sides='b') +
-  geom_boxplot(data=ctrs.plane,
-               aes(x=0.008 * X1, 
-                   y=matrix(0, 1, length(X1)),
-                   weight=n.post1),
-               width=0.1,
-               notch=TRUE,
-               color='blue') +
-  geom_segment(aes(x=0.008 * p1_x1_wm, 
-                   y=0, 
-                   xend=0.008 * p1_x1_wm, 
-                   yend=0.5),
-               color='blue')+
-  geom_violin(data=ctrs.plane,
-              aes(x=0.008 * X1, 
-                  y=matrix(1, 1, length(X1)),
-                  weight=n.post2),
-              color='red',
-              trim=FALSE) +
-  geom_rug(data=ctrs.plane,
-           aes(x=0.008 * X1, 
-               y=matrix(0, 1, length(X1))),
-           color='red',
-           sides='t') +
-  geom_boxplot(data=ctrs.plane,
-               aes(x=0.008 * X1, 
-                   y=matrix(1, 1, length(X1)),
-                   weight=n.post2),
-               width=0.1,
-               notch=TRUE,
-               color='red') +
-  geom_segment(aes(x=0.008 * p2_x1_wm, 
-                   y=1, 
-                   xend=0.008 * p2_x1_wm, 
-                   yend=0.5),
-               color='red') +
-  geom_segment(aes(x=0.008 * p1_x1_wm, 
-                   y=0.5, 
-                   xend=0.008 * p2_x1_wm, 
-                   yend=0.5)) +
-  annotate('text',
-           label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
-           x=0.5 * 0.008 * (p1_x1_wm + p2_x1_wm),
-           y=0.55) +
-  ggtitle('Distance of weighted centroids from separating line') +
-  xlab('Samples') +
-  ylab('') +
-  theme(axis.text.y=element_blank(),
-        axis.ticks.y=element_blank(),
-        plot.title=element_text(hjust=0.5))
-
 
 
 
@@ -536,7 +473,8 @@ ggplot() +
 if (any(proj_v != 0)) {
 
   # Add an artificial offset to better show the process
-  proj_v <- proj_v - c(2000, 0)
+  line_offset <- 2000
+  proj_v <- proj_v - c(line_offset, 0)
   
   # Find the unit vector
   p0 <- c(0, t(as.matrix(c(1, 0))) %*% as.matrix(proj_v))
@@ -545,11 +483,17 @@ if (any(proj_v != 0)) {
   uv_mod <- sqrt(sum(uv *uv))
   uv_norm <- uv / uv_mod
   
-  # Define the projection matrix and project the centroids on the line
+  # Define the projection matrix
   p_matrix <- (uv_norm %*% t(uv_norm)) / c(t(uv_norm) %*% uv_norm)
+  
+  # Project the centers of mass on the lines
   p1_prj <- p_matrix %*% as.matrix(c(p1_x1_wm, p1_x2_wm) - p0) + p0
   p2_prj <- p_matrix %*% as.matrix(c(p2_x1_wm, p2_x2_wm) - p0) + p0
   
+  # Calculate the projected distance
+  dist_wm_prj= sqrt((p1_prj[1] - p2_prj[1])^2 + (p1_prj[2] - p2_prj[2])^2)
+  
+  # Generate the image showing how the distance is evaluated
   ggplot() +
     coord_fixed() +
     xlab('A-P axis, um') +
@@ -594,10 +538,15 @@ if (any(proj_v != 0)) {
                  col='blue',
                  size=1,
                  linetype='dotted') +
+    geom_segment(aes(x=0.008 * p1_prj[1],
+                     xend=0.008 * p2_prj[1],
+                     y=0.008 * p1_prj[2],
+                     yend=0.008 * p2_prj[2]),
+                 col='yellow', size=1) +
     annotate('text',
-             label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
-             x=0.008 * max(p1_x1_wm, p2_x1_wm),
-             y=0.008 * max(p1_x2_wm, p2_x2_wm),
+             label=toString(paste(round(0.008 * dist_wm_prj, 2), 'um')),
+             x=0.008 * min(p1_x1_wm, p2_x1_wm),
+             y=0.008 * (proj_v[1] - 1000),
              size=5, col="black") +
     ggtitle(paste('Weighted median distance', post_type1, '(red) <=>', post_type2, '(blue)')) +
     theme(plot.title=element_text(hjust=0.5))+
@@ -606,5 +555,4 @@ if (any(proj_v != 0)) {
           plot.title = element_text(face="bold", color="black", size=12),
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15))
-  
 }
