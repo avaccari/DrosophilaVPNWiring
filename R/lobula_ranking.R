@@ -80,10 +80,10 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LPLC2'
+pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 20
+top <- 20  # 25 for LC4 and 20 for LPLC2
 
 # Evaluate best separator using only anti-parallel?
 use_anti <- TRUE
@@ -382,6 +382,7 @@ uv <- c(origin[1], origin[2]) - c(origin[1] + 100, (origin[1] + 100) * med[4] + 
 uv_mod <- sqrt(sum(uv *uv))
 uv_norm <- uv / uv_mod
 
+cat('Projection line a and b:', med[3:4])
 
 
 
