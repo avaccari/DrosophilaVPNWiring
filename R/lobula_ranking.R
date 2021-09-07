@@ -83,7 +83,7 @@ source('R/aux_functions.R')
 pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 20  # 25 for LC4 and 20 for LPLC2
+top <- 25  # 25 for LC4 and 20 for LPLC2
 
 # Evaluate best separator using only anti-parallel?
 use_anti <- TRUE
@@ -288,8 +288,8 @@ com_full <- combn(top_posts, 2)
 # Extract top posts and their counts
 posts <- all_posts_cnt[, names(all_posts_cnt) %in% top_posts]
 
-# Evaluate the Pearson's correlation matrix
-pcorr <- cor(posts, method="pearson", use="complete.obs")
+# Evaluate the Spearman's correlation matrix
+pcorr <- cor(posts, method="spearman", use="complete.obs")
 
 # convert to data frame with the results and write each pair as a row entry
 ut <- upper.tri(pcorr)
@@ -382,7 +382,6 @@ uv <- c(origin[1], origin[2]) - c(origin[1] + 100, (origin[1] + 100) * med[4] + 
 uv_mod <- sqrt(sum(uv *uv))
 uv_norm <- uv / uv_mod
 
-cat('Projection line a and b:', med[3:4])
 
 
 
@@ -578,6 +577,10 @@ for (c in 1:ncol(eval_com)) {
   dist_mtrx[p1, p2] <- dist
   dist_mtrx[p2, p1] <- dist
 }
+
+# Show coefficients of the projected line used
+cat('Projection line a and b:', med[3:4])
+
 
 ###############################################################################
 # This section is needed only if you want the correlation plot to be sorted in

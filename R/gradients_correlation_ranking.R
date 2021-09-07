@@ -57,7 +57,7 @@ if (!exists('nlist')) {
 pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 20
+top <- 20  # 25 for LC4 and 20 for LPLC2
 ###############################################################################
 
 
@@ -100,8 +100,8 @@ colnames(posts) <- c(top_posts)
 # Change NaN to zeros
 posts[is.na(posts)] <- 0
 
-# Evaluate the Pearson's correlation matrix
-pcorr <- cor(posts, method="pearson", use="complete.obs")
+# Evaluate the Spearman's correlation matrix
+pcorr <- cor(posts, method="spearman", use="complete.obs")
 
 # Create a data frame with the results
 ut <- upper.tri(pcorr)
