@@ -12,7 +12,8 @@
 #   posts within the projection of the lobula on the selection plane. The plot
 #   also shows the weighted median (and weighted box plots) for the centers of
 #   mass (weighted by the number of synapses with pre)
-# - A 2d plot showing the distance between the weighted medians.
+# - A 2d plot showing the distance between the weighted medians (two versions).
+# - A 2d plot showing how the distance between the centroids is calculated.
 #
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -93,7 +94,9 @@ c_map_both <- 'd9'  # Map to use for both posts together
 c_size_both <- 100  # Number of colors in the map
 
 # Projection line a and b
-# The a and b of the projection line to use to generate the contrcution figure. 
+# The a and b of the projection line to use to generate the contrcution figure.
+# The coefficients for a specific VPN can be found running the
+# lobula_ranking.R script.
 # If all zeros, the figure will not be generated.
 proj_v <- c(861.5319, -0.364655)
 # proj_v <- c(0, 0)
@@ -513,8 +516,8 @@ ggplot() +
                    xend=0.008 * p2_x1_wm, 
                    yend=0.5)) +
   annotate('text',
-           label=toString(paste(round(0.008*abs(p1_x1_wm - p2_x1_wm), 2), 'um')),
-           x=0.5 * (p1_x1_wm + p2_x1_wm),
+           label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
+           x=0.5 * 0.008 * (p1_x1_wm + p2_x1_wm),
            y=0.55) +
   ggtitle('Distance of weighted centroids from separating line') +
   xlab('Samples') +
