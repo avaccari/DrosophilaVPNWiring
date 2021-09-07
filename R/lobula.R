@@ -84,7 +84,6 @@ post_type2 <- 'DNp11'  # Blue
 # NOTE: the FIRST plane specified is also use as projection plane
 planes <- get.plane(pre_type, 'lobula')
 
-
 # Using perceptually uniform color map
 # More options here:
 # https://cran.r-project.org/web/packages/cetcolor/vignettes/cet_color_schemes.html
@@ -92,6 +91,12 @@ c_map_single <- 'r2'  # Map to use for individual post plot
 c_size_single <- 100  # Number of colors in the map
 c_map_both <- 'd9'  # Map to use for both posts together
 c_size_both <- 100  # Number of colors in the map
+
+# Projection line a and b
+# The a and b of the projection line to use to generate the contrcution figure. 
+# If all zeros, the figure will not be generated.
+proj_v <- c(861.5319, -0.364655)
+# proj_v <- c(0, 0)
 
 # Plot window size
 win_siz <- 500
@@ -284,14 +289,14 @@ proj1 <- ggplot() +
          geom_polygon(data=end_pts.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.3) +
-         #geom_point(data=end_pts.plane,
-          #          aes(x=0.008 * X1, y=0.008 * X2),
-           #         size=0.1,
-            #        alpha=0.2) +
+         # geom_point(data=end_pts.plane,
+         #            aes(x=0.008 * X1, y=0.008 * X2),
+         #            size=0.1,
+         #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post1, size=n.post1)) +
          scale_color_gradientn(colours=col_single) +
-         #scale_size_continuous(range=c(0, 7)) +
+         # scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
                       aes(x=0.008 * X1,
                           y=0.008 * (min(end_pts.plane$X2) - dist_box),
@@ -328,14 +333,14 @@ proj2 <- ggplot() +
          geom_polygon(data=end_pts.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.3) +
-         #geom_point(data=end_pts.plane,
-          #          aes(x=0.008 * X1, y=0.008 * X2),
-           #         size=0.1,
-            #        alpha=0.2) +
+         # geom_point(data=end_pts.plane,
+         #            aes(x=0.008 * X1, y=0.008 * X2),
+         #            size=0.1,
+         #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post2, size=n.post2)) +
          scale_color_gradientn(colours=col_single) +
-         #scale_size_continuous(range=c(0, 7)) +
+         # scale_size_continuous(range=c(0, 7)) +
          geom_boxplot(data=ctrs.plane,
                       aes(x=0.008 * X1,
                           y=0.008 * (min(end_pts.plane$X2) - dist_box),
@@ -375,20 +380,20 @@ ggplot() +
   geom_polygon(data=end_pts.plane[lo, ],
                aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.3) +
-  #geom_point(data=end_pts.plane,
-   #          aes(x=0.008 * X1, y=0.008 * X2),
-    #         size=0.5,
-     #        alpha=0.1) +
-  #geom_point(data=ctrs.plane,
-   #          aes(x=0.008 * X1, y=0.008 * X2, size=n.post1),
-    #         colour='red',
-     #        shape=1,
-      #       stroke=1.5) +
-  #geom_point(data=ctrs.plane,
-   #          aes(x=0.008 * X1, y=0.008 * X2, size=n.post2),
-    #         colour='blue',
-     #        shape=1,
-      #       stroke=1.5) +
+  # geom_point(data=end_pts.plane,
+  #            aes(x=0.008 * X1, y=0.008 * X2),
+  #            size=0.5,
+  #            alpha=0.1) +
+  # geom_point(data=ctrs.plane,
+  #            aes(x=0.008 * X1, y=0.008 * X2, size=n.post1),
+  #            colour='red',
+  #            shape=1,
+  #            stroke=1.5) +
+  # geom_point(data=ctrs.plane,
+  #            aes(x=0.008 * X1, y=0.008 * X2, size=n.post2),
+  #            colour='blue',
+  #            shape=1,
+  #            stroke=1.5) +
   geom_boxplot(data=ctrs.plane,
                aes(x=0.008 * X1,
                    y=0.008 * (min(end_pts.plane$X2) - dist_box),
@@ -444,9 +449,9 @@ ggplot() +
                col='yellow', size=1) +
   annotate('text',
            label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
-           x=0.008 * min(p1_x1_wm, p2_x1_wm),
-           y=0.008 * min(p1_x2_wm, p2_x2_wm),
-           size=5, col="black", hjust=1.1) +
+           x=0.008 * max(p1_x1_wm, p2_x1_wm),
+           y=0.008 * max(p1_x2_wm, p2_x2_wm),
+           size=5, col="black") +
   ggtitle(paste('Weighted median distance', post_type1, '(red) <=>', post_type2, '(blue)')) +
   theme(plot.title=element_text(hjust=0.5))+
   theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
@@ -456,3 +461,147 @@ ggplot() +
         axis.title.x = element_text(size=15))
 
 
+ggplot() +
+  geom_violin(data=ctrs.plane,
+              aes(x=0.008 * X1, 
+                  y=matrix(0, 1, length(X1)),
+                  weight=n.post1),
+              color='blue',
+              trim=FALSE) +
+  geom_rug(data=ctrs.plane,
+           aes(x=0.008 *X1, 
+               y=matrix(0, 1, length(X1))),
+           color='blue',
+           sides='b') +
+  geom_boxplot(data=ctrs.plane,
+               aes(x=0.008 * X1, 
+                   y=matrix(0, 1, length(X1)),
+                   weight=n.post1),
+               width=0.1,
+               notch=TRUE,
+               color='blue') +
+  geom_segment(aes(x=0.008 * p1_x1_wm, 
+                   y=0, 
+                   xend=0.008 * p1_x1_wm, 
+                   yend=0.5),
+               color='blue')+
+  geom_violin(data=ctrs.plane,
+              aes(x=0.008 * X1, 
+                  y=matrix(1, 1, length(X1)),
+                  weight=n.post2),
+              color='red',
+              trim=FALSE) +
+  geom_rug(data=ctrs.plane,
+           aes(x=0.008 * X1, 
+               y=matrix(0, 1, length(X1))),
+           color='red',
+           sides='t') +
+  geom_boxplot(data=ctrs.plane,
+               aes(x=0.008 * X1, 
+                   y=matrix(1, 1, length(X1)),
+                   weight=n.post2),
+               width=0.1,
+               notch=TRUE,
+               color='red') +
+  geom_segment(aes(x=0.008 * p2_x1_wm, 
+                   y=1, 
+                   xend=0.008 * p2_x1_wm, 
+                   yend=0.5),
+               color='red') +
+  geom_segment(aes(x=0.008 * p1_x1_wm, 
+                   y=0.5, 
+                   xend=0.008 * p2_x1_wm, 
+                   yend=0.5)) +
+  annotate('text',
+           label=toString(paste(round(0.008*abs(p1_x1_wm - p2_x1_wm), 2), 'um')),
+           x=0.5 * (p1_x1_wm + p2_x1_wm),
+           y=0.55) +
+  ggtitle('Distance of weighted centroids from separating line') +
+  xlab('Samples') +
+  ylab('') +
+  theme(axis.text.y=element_blank(),
+        axis.ticks.y=element_blank(),
+        plot.title=element_text(hjust=0.5))
+
+
+
+
+
+
+# If a projection line is specified, generate a figure showing the projection 
+# on the user-specified line
+if (any(proj_v != 0)) {
+
+  # Add an artificial offset to better show the process
+  proj_v <- proj_v - c(2000, 0)
+  
+  # Find the unit vector
+  p0 <- c(0, t(as.matrix(c(1, 0))) %*% as.matrix(proj_v))
+  p1 <- c(1, t(as.matrix(c(1, 1))) %*% as.matrix(proj_v))
+  uv <-  p1 - p0
+  uv_mod <- sqrt(sum(uv *uv))
+  uv_norm <- uv / uv_mod
+  
+  # Define the projection matrix and project the centroids on the line
+  p_matrix <- (uv_norm %*% t(uv_norm)) / c(t(uv_norm) %*% uv_norm)
+  p1_prj <- p_matrix %*% as.matrix(c(p1_x1_wm, p1_x2_wm) - p0) + p0
+  p2_prj <- p_matrix %*% as.matrix(c(p2_x1_wm, p2_x2_wm) - p0) + p0
+  
+  ggplot() +
+    coord_fixed() +
+    xlab('A-P axis, um') +
+    ylab('D-V axis, um') +
+    geom_polygon(data=end_pts.plane[lo, ],
+                 aes(x=0.008 * X1, y=0.008 * X2),
+                 alpha=0.3) +
+    geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
+                     xend=0.008 * (p1_x1_wm + seg_len),
+                     y=0.008 * p1_x2_wm,
+                     yend=0.008 * p1_x2_wm),
+                 col='red', size=3) +
+    geom_segment(aes(y=0.008 * (p1_x2_wm - seg_len),
+                     yend=0.008 * (p1_x2_wm + seg_len),
+                     x=0.008 * p1_x1_wm,
+                     xend=0.008 * p1_x1_wm),
+                 col='red', size=3) +
+    geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
+                     xend=0.008 * (p2_x1_wm + seg_len),
+                     y=0.008 * p2_x2_wm,
+                     yend=0.008 * p2_x2_wm),
+                 col='blue', size=3) +
+    geom_segment(aes(y=0.008 * (p2_x2_wm - seg_len),
+                     yend=0.008 * (p2_x2_wm + seg_len),
+                     x=0.008 * p2_x1_wm,
+                     xend=0.008 * p2_x1_wm),
+                 col='blue', size=3) +
+    geom_abline(aes(slope=proj_v[2],
+                intercept=0.008 * proj_v[1]),
+                col='blue', size=2) +
+    geom_segment(aes(x=0.008 * p1_prj[1],
+                     xend=0.008 * p1_x1_wm,
+                     y=0.008 * p1_prj[2],
+                     yend=0.008 * p1_x2_wm),
+                 col='red',
+                 size=1,
+                 linetype='dotted') +
+    geom_segment(aes(x=0.008 * p2_prj[1],
+                     xend=0.008 * p2_x1_wm,
+                     y=0.008 * p2_prj[2],
+                     yend=0.008 * p2_x2_wm),
+                 col='blue',
+                 size=1,
+                 linetype='dotted') +
+    annotate('text',
+             label=toString(paste(round(0.008 * dist_wm, 2), 'um')),
+             x=0.008 * max(p1_x1_wm, p2_x1_wm),
+             y=0.008 * max(p1_x2_wm, p2_x2_wm),
+             size=5, col="black") +
+    ggtitle(paste('Weighted median distance', post_type1, '(red) <=>', post_type2, '(blue)')) +
+    theme(plot.title=element_text(hjust=0.5))+
+    theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+          plot.title = element_text(face="bold", color="black", size=12),
+          axis.title.y = element_text(size=15),
+          axis.title.x = element_text(size=15))
+  
+}
