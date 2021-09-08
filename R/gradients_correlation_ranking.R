@@ -54,7 +54,7 @@ if (!exists('nlist')) {
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
 top <- 20  # 25 for LC4 and 20 for LPLC2
@@ -125,9 +125,9 @@ pcorr <- pcorr[sort.pcorr, sort.pcorr]
 # (There are a lot of options for this plot)
 corrplot(pcorr,
          method='color',  # Color the background
-         type='upper',  # Only upper diagonal
-         order='FPC',  # First principal component order
+         col=colorRampPalette(c("darkred", "white", "darkblue"))(200),
+         order='hclust',  # First principal component order
          addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
-         diag=FALSE,  # No diagonal
          tl.col='black')  # Color of the labels in black
+
