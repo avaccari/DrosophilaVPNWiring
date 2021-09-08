@@ -232,7 +232,7 @@ for (i in 1:length(all_nlist)) {
   }
 }
 
-# SHow in red on the 3d plot
+# Show in red on the 3d plot
 plot3d(ctrs, col='red', size=5, add=TRUE)
 
 # Turn into a dataframe
@@ -530,7 +530,7 @@ ggplot() +
 
 # Second round of projections ----
 # Create an empty matrix to store the results
-dist_mtrx <- matrix(nrow=top, ncol=top)
+dist_mtrx <- matrix(0, nrow=top, ncol=top)
 rownames(dist_mtrx) <- c(top_posts)
 colnames(dist_mtrx) <- c(top_posts)
 
@@ -587,7 +587,7 @@ cat('Projection line a and b:', med[3:4])
 # the same way in all the scripts.
 sort.pcorr <- order(rownames(pcorr))
 pcorr <- pcorr[sort.pcorr, sort.pcorr]
-pcorr.FPC <- corrMatOrder(pcorr, order='FPC')
+pcorr.FPC <- corrMatOrder(pcorr, order='hclust')
 sort.dist_mtrx <- order(rownames(dist_mtrx))
 dist_mtrx <- dist_mtrx[sort.dist_mtrx, sort.dist_mtrx]
 dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
@@ -597,14 +597,11 @@ dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
 corrplot(0.008 * dist_mtrx_no,
          is.corr=FALSE,  # It is not a correlation matrix
          method='color',  # Color the background
-         type='upper',  # Only upper diagonal
+         col=colorRampPalette(c("white", "darkblue"))(200),
          order='original',  # Alphabetical
          addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
-         diag=FALSE,  # No diagonal
          tl.col='black')  # Color of the labels in black
-
-
 
 
 # Check the correlation between the distance matrix and the correlation matrix
