@@ -83,7 +83,7 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
 top <- 20  # 25 for LC4 and 20 for LPLC2
@@ -401,7 +401,7 @@ for (c in 1:ncol(com)) {
 
 # Second round of projections ----
 # Create an empty matrix to store the results
-dist_mtrx <- matrix(nrow=top, ncol=top)
+dist_mtrx <- matrix(0, nrow=top, ncol=top)
 rownames(dist_mtrx) <- c(top_posts)
 colnames(dist_mtrx) <- c(top_posts)
 
@@ -458,7 +458,7 @@ for (c in 1:ncol(eval_com)) {
 # the same way in all the scripts.
 sort.pcorr <- order(rownames(pcorr))
 pcorr <- pcorr[sort.pcorr, sort.pcorr]
-pcorr.FPC <- corrMatOrder(pcorr, order='FPC')
+pcorr.FPC <- corrMatOrder(pcorr, order='hclust')
 sort.dist_mtrx <- order(rownames(dist_mtrx))
 dist_mtrx <- dist_mtrx[sort.dist_mtrx, sort.dist_mtrx]
 dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
@@ -468,11 +468,10 @@ dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
 corrplot(0.008 * dist_mtrx_no,
          is.corr=FALSE,  # It is not a correlation matrix
          method='color',  # Color the background
-         type='upper',  # Only upper diagonal
+         col=colorRampPalette(c("white", "darkblue"))(200),
          order='original',  # Alphabetical
          addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
-         diag=FALSE,  # No diagonal
          tl.col='black')  # Color of the labels in black
 
 
