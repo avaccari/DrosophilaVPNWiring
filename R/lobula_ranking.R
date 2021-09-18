@@ -579,7 +579,7 @@ for (c in 1:ncol(eval_com)) {
 }
 
 # Show coefficients of the projected line used
-cat('Projection line a and b:', med[3:4])
+cat('Projection line a (intercept) and b (slope):', med[3:4])
 
 
 ###############################################################################
