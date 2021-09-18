@@ -26,6 +26,7 @@
 
 #
 # TODO:
+# 
 
 # Import required libraries
 library(tidyverse)
@@ -62,7 +63,7 @@ if (!exists('nlist')) {
 pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 20
+top <- 12
 ###############################################################################
 
 
@@ -93,6 +94,23 @@ top_cnt <- pre %>%
 # Add index as column
 top_cnt$idx <- as.numeric(rownames(top_cnt))
 
+# Assing a gradient color scale to the pre.bodyIDs of the post with most
+# connections and use the same color for each pre.bodyID in the other posts'
+# gradients representations.
+top_cnt <- top_cnt %>% ungroup()
+
+# Extract the pre.bodyIDs for the post with most connections
+top_post_ids <- top_cnt[top_cnt$post.type==top_cnt[[1, 2]], ]
+
+# Add a unique color identification to each pre.bodyID
+top_post_ids <- cbind(top_post_ids, preBodyId=1:nrow(top_post_ids))
+
+# Select only the required coloumns for the final merge
+top_post_ids <- top_post_ids %>% select(pre.bodyID, preBodyId)
+
+# Merge with top_cnt
+top_cnt <- merge(top_cnt, top_post_ids)
+
 # Plot data
 ggplot() +
   xlab("Individual LC4, arranged by descending output (independent on every graph)")+
@@ -100,9 +118,9 @@ ggplot() +
   theme_bw()+
   ylim(0, NA) +
   geom_point(data=top_cnt,
-             aes(x=idx, y=n), 
-             size=3, 
-             col="#990000") +
+             aes(x=idx, y=n, col=preBodyId), 
+             size=3) +
+  scale_color_gradientn(colours=rainbow(71)) +
   facet_wrap(~ post.type,
              scales="free") +
   #used to have "free_x
