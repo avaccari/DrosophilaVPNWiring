@@ -76,6 +76,9 @@ pre_type <- 'LC4'
 post_type1 <- 'DNp02' # Blue
 post_type2 <- 'DNp11' # Red
 
+# Scale SVM data
+scaleSVM <- TRUE
+
 # Grab the correct plane
 planes <- get.plane(pre_type, 'glomerulus')
 
@@ -83,7 +86,7 @@ planes <- get.plane(pre_type, 'glomerulus')
 # best separating DNp02 from DNp11 synapses in the LC4 glomerulus. If all values
 # are zeros, the plane will be evaluated from the data: best plane separating
 # the synapses for the two items listed above.
-plane <- c(0.251203, -0.5731687, 0.7799837, 13742.1)
+plane <- c(0.251203, -0.5731687, 0.7799837, 13742.1)  # DNp02 vs DNp11
 # plane <- c(0, 0, 0, 0)
 
 # Plot window size
@@ -141,7 +144,7 @@ if (all(plane == 0)) {
                   data=post.coors,
                   type='C-classification',
                   kernel='linear',
-                  scale=FALSE)
+                  scale=scaleSVM)
 
   # Find the plane coefficients
   w <- c(t(svm_model$coefs) %*% svm_model$SV)
