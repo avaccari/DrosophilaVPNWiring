@@ -43,6 +43,8 @@
 # - Decide if we want to drop the planes where the SVM does not converge
 # - Code could be optimized by getting the various coordinates in a table and
 #   then use the loop just to extract needed columns
+# - add planes to construction plot and make go through center of mass
+# - remove plane from final median separation plane
 
 
 # Import required libraries
@@ -51,6 +53,7 @@ library(zeallot)
 library(natverse)
 library(e1071)
 library(corrplot)
+library(matrixStats)
 
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
@@ -83,14 +86,17 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LPLC2'
+pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
-top <- 20  # 25 for LC4 and 20 for LPLC2
+top <- 25  # 25 for LC4 and 20 for LPLC2
+
+# Scale SVM data
+scaleSVM <- TRUE
 
 # Evaluate best separator using only anti-parallel?
 use_anti <- TRUE
-anti_threshold <- -0.5  # Max threshold allowed in gradient correlation
+anti_threshold <- -0.02  # Max threshold allowed in gradient correlation
 
 # Evaluate correlation matrix for all post pairs
 evaluate_all <- TRUE
@@ -272,7 +278,7 @@ for (c in 1:ncol(com)) {
                    data=post.coors,
                    type='C-classification',
                    kernel='linear',
-                   scale=FALSE)
+                   scale=scaleSVM)
 
   # Find the plane coefficients
   w <- t(svm_model$coefs) %*% svm_model$SV
