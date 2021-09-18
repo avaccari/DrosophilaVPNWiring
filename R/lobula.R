@@ -32,6 +32,10 @@
 
 #
 # TODO:
+# - duplicate the script and allow users to specify three groups of posts that
+#   should be shown in different colors on the loblula. 3 for LC4 and 5 for
+#   LPLC2. (maybe it could be done in such a way that users can select how many
+#   different clusters they need)
 
 
 # Import required libraries
@@ -192,8 +196,7 @@ plot3d(end_pts, col='green', size=3, add=TRUE)
 
 
 
-# Project the preserved end points on the plane in yellow. The convex hull of
-# these points define the lobula we are analyzing.
+# Project the preserved end points on the plane in yellow.
 end_pts.proj <- plane.proj(end_pts, w_norm, -w0)
 plot3d(end_pts.proj, col='yellow', size=1, add=TRUE)
 
@@ -251,9 +254,6 @@ Xep <- as.matrix(sweep(end_pts.proj, 2, center)) %*% unitX
 Yep <- as.matrix(sweep(end_pts.proj, 2, center)) %*% unitY
 end_pts.plane <- data.frame(cbind(Xep, Yep))
 
-# Calculate and plot the convex hull
-lo <- chull(end_pts.plane)
-
 # Centroids
 Xcm <- as.matrix(sweep(ctrs.proj, 2, center)) %*% unitX
 Ycm <- as.matrix(sweep(ctrs.proj, 2, center)) %*% unitY
@@ -283,12 +283,53 @@ p2_x2_wm <- weightedMedian(ctrs.plane$X2, w=ctrs.plane$n.post2, interpolate=FALS
 # Distance between weighted medians
 dist_wm = sqrt((p1_x1_wm - p2_x1_wm)^2 + (p1_x2_wm - p2_x2_wm)^2)
 
+# Calculate the convex hull
+# For consistency use all the neuron in the pre so that it doesn't change based
+# on the chosen posts, but just on the VPN.
+hull <- pre %>% 
+  filter(post.type==pre_type) %>%
+  group_by(pre.bodyID) %>%
+  pull(pre.bodyID) %>%
+  unique()
+
+# Get the neuron list from the posts bodyIDs
+n_list_hull <- nlist[as.character(hull)]
+
+# Select preserved end points for each neuron
+for (i in 1:length(n_list_hull)) {
+  neu <- n_list_hull[[i]]
+  ep <- neu$d[neu$EndPoints, ]
+  pts <- ep
+  for (p in 1:nrow(planes)) {
+    pts <- pts %>%
+      mutate(LO = planes[p, 5] * (planes[p, 1] * X + planes[p, 2] * Y + planes[p, 3] * Z + planes[p, 4])) %>%
+      filter(LO < 0) %>%
+      select(X, Y, Z)
+  }
+  if (i == 1) {
+    end_pts_hull <- pts
+  } else {
+    end_pts_hull <- rbind(end_pts_hull, pts)
+  }
+}
+
+# Project the hull end points on the 3D plane in yellow.
+end_pts_hull.proj <- plane.proj(end_pts_hull, w_norm, -w0)
+
+# Project the hull endpoints on the 2D plane
+Xep_hull <- as.matrix(sweep(end_pts_hull.proj, 2, center)) %*% unitX
+Yep_hull <- as.matrix(sweep(end_pts_hull.proj, 2, center)) %*% unitY
+end_pts_hull.plane <- data.frame(cbind(Xep_hull, Yep_hull))
+
+# Evaluate convex hull
+lo <- chull(end_pts_hull.plane)
+
 # Generate the plot for post1
 proj1 <- ggplot() +
          coord_fixed() +
          xlab('A-P axis, um') +
          ylab('D-V axis, um') +
-         geom_polygon(data=end_pts.plane[lo, ],
+         geom_polygon(data=end_pts_hull.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.3) +
          # geom_point(data=end_pts.plane,
@@ -332,7 +373,7 @@ proj2 <- ggplot() +
          coord_fixed() +
          xlab('A-P axis, um') +
          ylab('D-V axis, um') +
-         geom_polygon(data=end_pts.plane[lo, ],
+         geom_polygon(data=end_pts_hull.plane[lo, ],
                       aes(x=0.008 * X1, y=0.008 * X2),
                       alpha=0.3) +
          # geom_point(data=end_pts.plane,
@@ -379,7 +420,7 @@ ggplot() +
   coord_fixed() +
   xlab('A-P axis, um') +
   ylab('D-V axis, um') +
-  geom_polygon(data=end_pts.plane[lo, ],
+  geom_polygon(data=end_pts_hull.plane[lo, ],
                aes(x=0.008 * X1, y=0.008 * X2),
                alpha=0.3) +
   # geom_point(data=end_pts.plane,
@@ -498,7 +539,7 @@ if (any(proj_v != 0)) {
     coord_fixed() +
     xlab('A-P axis, um') +
     ylab('D-V axis, um') +
-    geom_polygon(data=end_pts.plane[lo, ],
+    geom_polygon(data=end_pts_hull.plane[lo, ],
                  aes(x=0.008 * X1, y=0.008 * X2),
                  alpha=0.3) +
     geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
