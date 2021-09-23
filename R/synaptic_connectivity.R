@@ -62,6 +62,9 @@ if (!exists('nlist')) {
 # Define items to analyze here
 pre_type <- 'LC4'
 
+# Post to use for gradient definition
+post_grad <- 'DNp11'
+
 # Top (# of synapses) of post to consider
 top <- 12
 ###############################################################################
@@ -100,7 +103,7 @@ top_cnt$idx <- as.numeric(rownames(top_cnt))
 top_cnt <- top_cnt %>% ungroup()
 
 # Extract the pre.bodyIDs for the post with most connections
-top_post_ids <- top_cnt[top_cnt$post.type==top_cnt[[1, 2]], ]
+top_post_ids <- top_cnt[top_cnt$post.type==post_grad, ]
 
 # Add a unique color identification to each pre.bodyID
 top_post_ids <- cbind(top_post_ids, preBodyId=1:nrow(top_post_ids))
