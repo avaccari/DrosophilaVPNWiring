@@ -57,7 +57,7 @@ if (!exists('nlist')) {
 pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
-top <- 20  # 25 for LC4 and 20 for LPLC2
+top <- 25 
 ###############################################################################
 
 
