@@ -3,6 +3,9 @@
 # Purpose: Evaluates the distance matrix of the centroid evaluated in
 #          glomerulus.R evaluated according to the best separation plane
 #          calculated from the top anti-parallel pairs of posts of a given pre.
+#          The user can use just the most anti-parallel pairs to evaluate the 
+#          optimal plane selected by using a threshold on the correlation of the
+#          synaptic gradient.
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
 # Generates:
@@ -34,18 +37,8 @@
 
 #
 # TODO:
-# - Find a way to use the scaled data with the SVM and then recover the equation
-#   of the plane (especially the relationship between d and rho). This is going
-#   to be more robust and determine the separating plane in more cases.
-#   Since we do not care about the intercept, the method might just work without
-#   too many problems. Verify that the projection on the perpendicular makes
-#   sense and use that.
-# - Decide if we want to drop the planes where the SVM does not converge
 # - Code could be optimized by getting the various coordinates in a table and
 #   then use the loop just to extract needed columns
-# - add planes to construction plot and make go through center of mass
-# - remove plane from final median separation plane
-
 
 # Import required libraries
 library(tidyverse)
@@ -86,10 +79,10 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- 'LPLC2'
 
 # Top (# of synapses) of post to consider
-top <- 25  # 25 for LC4 and 20 for LPLC2
+top <- 25 
 
 # Scale SVM data
 scaleSVM <- TRUE
@@ -284,7 +277,13 @@ for (c in 1:ncol(com)) {
   w <- t(svm_model$coefs) %*% svm_model$SV
   w_mod <- sqrt(sum(w *w))
   w_norm <- w/w_mod
-  w0 <- svm_model$rho/w_mod
+  # w0 <- svm_model$rho/w_mod
+  
+  # Since we don't care about the offset but only the orientation of the
+  # plane, force it to pass thorugh the centroids of the post coors
+  center <- colMeans(post.coors %>% select('X', 'Y', 'Z'))
+  w0 <- center %*% t(w_norm)
+  
   
   # Store coefficients in the matrix
   ms[c, ] <- c(w_norm, w0)
@@ -335,7 +334,7 @@ plot3d(post.coors, col='green', alpha=1, add=TRUE)
 center <- colMeans(post.coors)
 plot3d(center[1], center[2], center[3], col='white', size=10, add=TRUE)
 offset <- center %*% med_plane[1:3]
-planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
+# planes3d(a=ms[, 1], b=ms[, 2], c=ms[, 3], d=-ms[, 4], col='red', add=TRUE, alpha=0.2)
 planes3d(a=med_plane[1], b=med_plane[2], c=med_plane[3], d=-offset, col='blue', add=TRUE)
 
 # Show the median plane equation
@@ -502,13 +501,13 @@ dist_mtrx_df <- data.frame(row=rownames(dist_mtrx_srt)[row(dist_mtrx_srt)[ut]],
 merged <- merge(pcorr_df, dist_mtrx_df, by=c('row','column'))
 
 # Evaluate the correlation between the two
-corr <- cor(c(merged$cor.x), c(merged$cor.y), method='pearson')
+corr <- cor(c(merged$cor.x), c(merged$cor.y), method='spearman', use='complete.obs')
 
 
 # Plot the results
 ggplot() +
-  xlim(-0.9, 0.9) +
-  ylim (0, 7)+
+  # xlim(-0.9, 0.9) +
+  # ylim (0, 7)+
   ylab("Distance between centroids in the glomerulus, um") +
   xlab("Glomerular connectivity correlation") +
   theme_classic()+
