@@ -150,7 +150,12 @@ if (all(plane == 0)) {
   w <- c(t(svm_model$coefs) %*% svm_model$SV)
   w_mod <- sqrt(sum(w *w))
   w_norm <- w/w_mod
-  w0 <- svm_model$rho/w_mod
+  # w0 <- svm_model$rho/w_mod
+
+    # Since we don't care about the offset but only the orientation of the
+  # plane, force it to pass thorugh the centroids of the post coors
+  center <- colMeans(post.coors %>% select('X', 'Y', 'Z'))
+  w0 <- center %*% t(w_norm)
 } else {
   w <- plane[0:3]
   w_mod <- sqrt(sum(w *w))
