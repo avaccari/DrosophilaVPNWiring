@@ -30,6 +30,7 @@
 
 # Import required libraries
 library(tidyverse)
+library(cetcolor)
 
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
@@ -122,8 +123,8 @@ ggplot() +
   ylim(0, NA) +
   geom_point(data=top_cnt,
              aes(x=idx, y=n, col=preBodyId), 
-             size=3) +
-  scale_color_gradientn(colours=rainbow(71)) +
+             size=2) +
+  scale_color_gradientn(colours=cet_pal(nrow(top_post_ids))) +
   facet_wrap(~ post.type,
              scales="free") +
   #used to have "free_x
