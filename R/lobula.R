@@ -13,6 +13,9 @@
 #   also shows the weighted median (and weighted box plots) for the centers of
 #   mass (weighted by the number of synapses with pre)
 # - A 2d plot showing the distance between the weighted medians (two versions).
+# - A 2d plot showing the gradient of synapses sorted using the position of the
+#   centroids with respect to either the anterior-posterior or the dorsal-ventral 
+#   as specified by the user
 #
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -103,6 +106,10 @@ c_size_both <- 100  # Number of colors in the map
 # If all zeros, the figure will not be generated.
 proj_v <- c(983.6229896,  -0.5838685)  # Top25 for LC4
 # proj_v <- c(0, 0)
+
+# When generating the gradients, sort the data by dorsal-ventral. If FALSE, the 
+# data will be sorted by anterior-posterior
+sort_by_dv <- FALSE
 
 # Plot window size
 win_siz <- 500
@@ -324,6 +331,16 @@ end_pts_hull.plane <- data.frame(cbind(Xep_hull, Yep_hull))
 # Evaluate convex hull
 lo <- chull(end_pts_hull.plane)
 
+# Sort the data to generate the  gradient plots
+ctrs.plane.sorted <- ctrs.plane %>%
+  arrange(X1)
+if (sort_by_dv==TRUE) {
+  ctrs.plane.sorted <- ctrs.plane %>%
+    arrange(X2)
+}
+# Add index as column
+ctrs.plane.sorted$idx <- as.numeric(rownames(ctrs.plane.sorted))
+
 # Generate the plot for post1
 proj1 <- ggplot() +
          coord_fixed() +
@@ -338,20 +355,21 @@ proj1 <- ggplot() +
          #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post1, size=n.post1)) +
-         scale_color_gradientn(colours=col_single) +
-         # scale_size_continuous(range=c(0, 7)) +
-         geom_boxplot(data=ctrs.plane,
-                      aes(x=0.008 * X1,
-                          y=0.008 * (min(end_pts.plane$X2) - dist_box),
-                          weight=n.post1),
-                      width=0.008 * width_box,
-                      notch=TRUE) +
-         geom_boxplot(data=ctrs.plane,
-                      aes(y=0.008 * X2,
-                          x=0.008 * (min(end_pts.plane$X1) - dist_box),
-                          weight=n.post1),
-                      width=0.008 * width_box,
-                      notch=TRUE) +
+         scale_color_gradientn(name="synapses\ncount", colours=col_single) +
+         scale_size_continuous(name="synapses\ncount", range=c(0, 7)) +
+         guides(colour=guide_legend(), size=guide_legend()) +
+         # geom_boxplot(data=ctrs.plane,
+         #              aes(x=0.008 * X1,
+         #                  y=0.008 * (min(end_pts.plane$X2) - dist_box),
+         #                  weight=n.post1),
+         #              width=0.008 * width_box,
+         #              notch=TRUE) +
+         # geom_boxplot(data=ctrs.plane,
+         #              aes(y=0.008 * X2,
+         #                  x=0.008 * (min(end_pts.plane$X1) - dist_box),
+         #                  weight=n.post1),
+         #              width=0.008 * width_box,
+         #              notch=TRUE) +
          geom_segment(aes(x=0.008 * (p1_x1_wm - seg_len),
                           xend=0.008 * (p1_x1_wm + seg_len),
                           y=0.008 * p1_x2_wm,
@@ -382,20 +400,21 @@ proj2 <- ggplot() +
          #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post2, size=n.post2)) +
-         scale_color_gradientn(colours=col_single) +
-         # scale_size_continuous(range=c(0, 7)) +
-         geom_boxplot(data=ctrs.plane,
-                      aes(x=0.008 * X1,
-                          y=0.008 * (min(end_pts.plane$X2) - dist_box),
-                          weight=n.post2),
-                      width=0.008 * width_box,
-                      notch=TRUE) +
-         geom_boxplot(data=ctrs.plane,
-                      aes(y=0.008 * X2,
-                          x=0.008 * (min(end_pts.plane$X1) - dist_box),
-                          weight=n.post2),
-                      width=0.008 * width_box,
-                      notch=TRUE) +
+         scale_color_gradientn(name="synapses\ncount", colours=col_single) +
+         scale_size_continuous(name="synapses\ncount", range=c(0, 7)) +
+         guides(colour=guide_legend(), size=guide_legend()) +
+         # geom_boxplot(data=ctrs.plane,
+         #              aes(x=0.008 * X1,
+         #                  y=0.008 * (min(end_pts.plane$X2) - dist_box),
+         #                  weight=n.post2),
+         #              width=0.008 * width_box,
+         #              notch=TRUE) +
+         # geom_boxplot(data=ctrs.plane,
+         #              aes(y=0.008 * X2,
+         #                  x=0.008 * (min(end_pts.plane$X1) - dist_box),
+         #                  weight=n.post2),
+         #              width=0.008 * width_box,
+         #              notch=TRUE) +
         geom_segment(aes(x=0.008 * (p2_x1_wm - seg_len),
                           xend=0.008 * (p2_x1_wm + seg_len),
                           y=0.008 * p2_x2_wm,
@@ -504,6 +523,80 @@ ggplot() +
         axis.title.x = element_text(size=15))
 
 
+# Generate the gradient plot based on the position of the centroids along the axis specified
+# by the user
+
+# Max number of synapses
+max_syn <- max(ctrs.plane.sorted$n.post1, ctrs.plane.sorted$n.post2)
+
+if (sort_by_dv==FALSE) {
+  grad1 <- ggplot() +
+    coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X1)) / max_syn)) +
+    xlab('A-P axis, um') +
+    ylab('Number of synapses') +
+    ylim(0, max_syn) +
+    geom_point(data=ctrs.plane.sorted,
+               aes(x=0.008 * X1, y=n.post1, colour=n.post1))+
+    scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    ggtitle(paste(pre_type, '>', post_type1)) +
+    theme(plot.title=element_text(hjust=0.5))+
+    theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+          plot.title = element_text(face="bold", color="black", size=15),
+          axis.title.y = element_text(size=15),
+          axis.title.x = element_text(size=15)) 
+
+  grad2 <- ggplot() +
+    coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X1)) / max_syn)) +
+    xlab('A-P axis, um') +
+    ylab('Number of synapses') +
+    ylim(0, max_syn) +
+    geom_point(data=ctrs.plane.sorted,
+               aes(x=0.008 * X1, y=n.post2, colour=n.post2)) +
+    scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    ggtitle(paste(pre_type, '>', post_type2)) +
+    theme(plot.title=element_text(hjust=0.5))+
+    theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+          plot.title = element_text(face="bold", color="black", size=15),
+          axis.title.y = element_text(size=15),
+          axis.title.x = element_text(size=15)) 
+} else {
+  grad1 <- ggplot() +
+    coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X2)) / max_syn)) +
+    xlab('D-V axis, um') +
+    ylab('Number of synapses') +
+    ylim(0, max_syn) +
+    geom_point(data=ctrs.plane.sorted,
+               aes(x=0.008 * X2, y=n.post1, colour=n.post1))+
+    scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    ggtitle(paste(pre_type, '>', post_type1)) +
+    theme(plot.title=element_text(hjust=0.5))+
+    theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+          plot.title = element_text(face="bold", color="black", size=15),
+          axis.title.y = element_text(size=15),
+          axis.title.x = element_text(size=15)) 
+  
+  grad2 <- ggplot() +
+    coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X2)) / max_syn)) +
+    xlab('D-V axis, um') +
+    ylab('Number of synapses') +
+    ylim(0, max_syn) +
+    geom_point(data=ctrs.plane.sorted,
+               aes(x=0.008 * X2, y=n.post2, colour=n.post2)) +
+    scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    ggtitle(paste(pre_type, '>', post_type2)) +
+    theme(plot.title=element_text(hjust=0.5))+
+    theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+          axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+          plot.title = element_text(face="bold", color="black", size=15),
+          axis.title.y = element_text(size=15),
+          axis.title.x = element_text(size=15)) 
+  
+}
+# Combine and show the plots
+grid.arrange(grad1, grad2, ncol=2)
 
 
 
