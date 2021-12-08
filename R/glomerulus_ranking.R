@@ -473,7 +473,7 @@ dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
 corrplot(0.008 * dist_mtrx_no,
          is.corr=FALSE,  # It is not a correlation matrix
          method='color',  # Color the background
-         col=colorRampPalette(c("white", "darkblue"))(200),
+         col=colorRampPalette(c("steelblue", "white"))(200),
          order='original',  # Alphabetical
          addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
