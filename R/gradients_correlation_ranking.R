@@ -5,9 +5,9 @@
 #          pairs.
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
-# Generates one scatter plot where the coordinates of each point represents the
-# number of synapses each pre has with the two posts (one for each coordinate).
-# The fit and the Pearson's correlation coefficient are shown on the plot.
+# Generates one correlation plot (heat map) showing Person's cross correlation
+# coefficients between between each of the to 25 (in terms of synapses) posts
+# for a specific pre.
 #
 # Copyright (c) 2021 Andrea Vaccari
 #
@@ -54,7 +54,7 @@ if (!exists('nlist')) {
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LPLC2'
+pre_type <- 'LC4'
 
 # Top (# of synapses) of post to consider
 top <- 25 

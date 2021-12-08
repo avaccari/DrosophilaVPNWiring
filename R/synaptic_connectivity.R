@@ -7,6 +7,8 @@
 # Generates:
 # - A plot showing the graded pre > posts synaptic connectivity for the top 
 #   posts of a specific pre
+# - A plot showing the pre > post synaptic connectivity for the post selected
+#   for gradient definition
 #
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -45,10 +47,10 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("hemibrain_con0.rds")
+  con <- readRDS('data/hemibrain_con0.rds')
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("nlist1.rds")
+  nlist <- readRDS('data/nlist1.rds')
 }
 
 
@@ -63,8 +65,9 @@ if (!exists('nlist')) {
 # Define items to analyze here
 pre_type <- 'LC4'
 
-# Post to use for gradient definition
-post_grad <- 'DNp11'
+# Post to use for gradient definition. This post will also generate a single
+# plot
+post_grad <- 'Giant Fiber'
 
 # Top (# of synapses) of post to consider
 top <- 12
@@ -124,10 +127,34 @@ ggplot() +
   geom_point(data=top_cnt,
              aes(x=idx, y=n, col=preBodyId), 
              size=2) +
-  scale_color_gradientn(colours=cet_pal(nrow(top_post_ids))) +
+  scale_color_gradientn(colours=rev(cet_pal(nrow(top_post_ids)))) +
   facet_wrap(~ post.type,
              scales="free") +
   #used to have "free_x
+  theme(axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())+
+  theme(axis.text.y = element_text(face="bold", color="black", size=12, angle=0),
+        plot.title = element_text(face="bold", color="blue", size=15),
+        axis.title.y = element_text(size=18),
+        axis.title.x = element_text(size=18),
+        strip.text = element_text(size = 13, face="bold"),
+        strip.background = element_rect(fill="#33CCFF"))
+
+
+# Restric the data to the selected post
+single_post <- top_cnt[top_cnt$post.type==post_grad,] %>% arrange(desc(n))
+
+# Plot data
+ggplot() +
+  xlab("Individual LC4, arranged by descending output")+
+  ylab("Number of synapses")+
+  theme_bw()+
+  ylim(0, NA) +
+  geom_point(data=single_post,
+             aes(x=idx, y=n, col=n), 
+             size=2) +
+  scale_color_gradientn(colours=cet_pal(nrow(single_post)),
+                        limits=c(0, max(single_post$n))) +
   theme(axis.text.x=element_blank(),
         axis.ticks.x=element_blank())+
   theme(axis.text.y = element_text(face="bold", color="black", size=12, angle=0),

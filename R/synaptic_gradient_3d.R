@@ -56,10 +56,10 @@ while (rgl.cur() > 0) { rgl.close() }
 
 # Load datasets
 if (!exists('con')) {
-  con <- readRDS("hemibrain_con0.rds")
+  con <- readRDS("data/hemibrain_con0.rds")
 }
 if (!exists('nlist')) {
-  nlist <- readRDS("nlist1.rds")
+  nlist <- readRDS("data/nlist1.rds")
 }
 
 
