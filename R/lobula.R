@@ -342,6 +342,10 @@ if (sort_by_dv==TRUE) {
 ctrs.plane.sorted$idx <- as.numeric(rownames(ctrs.plane.sorted))
 
 # Generate the plot for post1
+limits1 <- c(0, max(ctrs.plane$n.post1))
+breaks1 <- round(c(0, .25, .5, .75, 1) * max(ctrs.plane$n.post1))
+limits2 <- c(0, max(ctrs.plane$n.post2))
+breaks2 <- round(c(0, .25, .5, .75, 1) * max(ctrs.plane$n.post2))
 proj1 <- ggplot() +
          coord_fixed() +
          xlab('A-P axis, um') +
@@ -355,8 +359,14 @@ proj1 <- ggplot() +
          #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post1, size=n.post1)) +
-         scale_color_gradientn(name="synapses\ncount", colours=col_single) +
-         scale_size_continuous(name="synapses\ncount", range=c(0, 7)) +
+         scale_color_gradientn(name="synapses\ncount", 
+                               colours=col_single,
+                               breaks=breaks1,
+                               limits=limits1) +
+         scale_size_continuous(name="synapses\ncount", 
+                               limits=limits1,
+                               breaks=breaks1,
+                               range=c(0, 7)) +
          guides(colour=guide_legend(), size=guide_legend()) +
          # geom_boxplot(data=ctrs.plane,
          #              aes(x=0.008 * X1,
@@ -400,8 +410,14 @@ proj2 <- ggplot() +
          #            alpha=0.2) +
          geom_point(data=ctrs.plane,
                     aes(x=0.008 * X1, y=0.008 * X2, colour=n.post2, size=n.post2)) +
-         scale_color_gradientn(name="synapses\ncount", colours=col_single) +
-         scale_size_continuous(name="synapses\ncount", range=c(0, 7)) +
+         scale_color_gradientn(name="synapses\ncount", 
+                               colours=col_single,
+                               breaks=breaks2,
+                               limits=limits2) +
+         scale_size_continuous(name="synapses\ncount",
+                               limits=limits2,
+                               breaks=breaks2,
+                               range=c(0, 7)) +
          guides(colour=guide_legend(), size=guide_legend()) +
          # geom_boxplot(data=ctrs.plane,
          #              aes(x=0.008 * X1,
