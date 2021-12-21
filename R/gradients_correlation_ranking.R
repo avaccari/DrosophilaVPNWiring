@@ -5,9 +5,13 @@
 #          pairs.
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
-# Generates one correlation plot (heat map) showing Person's cross correlation
-# coefficients between between each of the to 25 (in terms of synapses) posts
-# for a specific pre.
+# Generates:
+# - one correlation plot (heat map) showing Person's cross correlation
+#   coefficients between between each of the to 25 (in terms of synapses)
+#   posts for a specific pre.
+# - one correlation plot (heat map) where the non-significant values 
+#   (p < 0.05) are blanked out
+# - one heat map showing the p-values
 #
 # Copyright (c) 2021 Andrea Vaccari
 #
@@ -28,6 +32,7 @@
 # TODO:
 library(tidyverse)
 library(corrplot)
+library(Hmisc)
 
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
@@ -101,14 +106,22 @@ colnames(posts) <- c(top_posts)
 posts[is.na(posts)] <- 0
 
 # Evaluate the Spearman's correlation matrix
-pcorr <- cor(posts, method="spearman", use="complete.obs")
+corr <- rcorr(as.matrix(posts), type='spearman')
+pcorr <- corr[[1]]
+pcorr_p <- corr[[3]]
+diag(pcorr_p) <- 0
 
 # Create a data frame with the results
 ut <- upper.tri(pcorr)
-pcorr_df <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
-                       column=rownames(pcorr)[col(pcorr)[ut]],
-                       cor=(pcorr)[ut])
-pcorr_df <- pcorr_df[order(pcorr_df$cor), ]
+pcorr_df_o <- data.frame(row=rownames(pcorr)[row(pcorr)[ut]],
+                         column=rownames(pcorr)[col(pcorr)[ut]],
+                         cor=(pcorr)[ut])
+pcorr_df <- pcorr_df_o[order(pcorr_df_o$cor), ]
+pcorr_p_df_o <- data.frame(row=rownames(pcorr_p)[row(pcorr_p)[ut]],
+                          column=rownames(pcorr_p)[col(pcorr_p)[ut]],
+                          cor=(pcorr_p)[ut])
+pcorr_p_df <- pcorr_p_df_o[order(pcorr_df_o$cor), ]
+
 cat('Most anti-correlated:\n')
 print(head(pcorr_df, 10))
 cat('Most correlated:\n')
@@ -118,16 +131,38 @@ print(tail(pcorr_df, 10))
 # This section is needed only if you want the correlation plot to be sorted in
 # the same way in all the scripts.
 sort.pcorr <- order(rownames(pcorr))
-pcorr <- pcorr[sort.pcorr, sort.pcorr]
+pcorr_s <- pcorr[sort.pcorr, sort.pcorr]
+pcorr.HC <- corrMatOrder(pcorr_s, order='hclust')
+pcorr_c <- pcorr_s[pcorr.HC, pcorr.HC]
+sort.pcorr_p <- order(rownames(pcorr_p))
+pcorr_p_s <- pcorr_p[sort.pcorr_p, sort.pcorr_p]
+pcorr_p_c <- pcorr_p_s[pcorr.HC, pcorr.HC]
 ###############################################################################
 
 # Show graphic results
 # (There are a lot of options for this plot)
-corrplot(pcorr,
+corrplot(pcorr_c, 
          method='color',  # Color the background
          col=colorRampPalette(c("darkred", "white", "darkblue"))(200),
-         order='hclust',  # First principal component order
-         addCoef.col='black',  # Add values in black
+         order='original',  # First principal component order
+         # addCoef.col='black',  # Add values in black
          number.cex=0.6,  # values size
          tl.col='black')  # Color of the labels in black
 
+corrplot(pcorr_c, 
+         p.mat=pcorr_p_c,  # p-values matrix
+         sig.level=0.05,  # significance level
+         insig='blank',  # Blank out insignificant values
+         method='color',  # Color the background
+         col=colorRampPalette(c("darkred", "white", "darkblue"))(200),
+         order='original',  # First principal component order
+         # addCoef.col='black',  # Add values in black
+         number.cex=0.6,  # values size
+         tl.col='black')  # Color of the labels in black
+
+corrplot(pcorr_p_c,
+         is.corr=FALSE,  # Not a correlation matrix
+         method='color',  # Color the background
+         col=colorRampPalette(c("darkblue", "white"))(200),
+         order='original',  # First principal component order
+         tl.col='black')  # Color of the labels in black
