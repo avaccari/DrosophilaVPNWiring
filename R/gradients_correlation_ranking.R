@@ -152,7 +152,7 @@ corrplot(pcorr_c,
 corrplot(pcorr_c, 
          p.mat=pcorr_p_c,  # p-values matrix
          sig.level=0.05,  # significance level
-         insig='blank',  # Blank out insignificant values
+         insig='label_sig',  # Blank out insignificant values
          method='color',  # Color the background
          col=colorRampPalette(c("darkred", "white", "darkblue"))(200),
          order='original',  # First principal component order
@@ -160,7 +160,7 @@ corrplot(pcorr_c,
          number.cex=0.6,  # values size
          tl.col='black')  # Color of the labels in black
 
-corrplot(pcorr_p_c,
+corrplot(log10(1+pcorr_p_c),
          is.corr=FALSE,  # Not a correlation matrix
          method='color',  # Color the background
          col=colorRampPalette(c("darkblue", "white"))(200),
