@@ -587,10 +587,10 @@ cat('Projection line a (intercept) and b (slope):', med[3:4])
 # the same way in all the scripts.
 sort.pcorr <- order(rownames(pcorr))
 pcorr <- pcorr[sort.pcorr, sort.pcorr]
-pcorr.FPC <- corrMatOrder(pcorr, order='hclust')
+pcorr.HC <- corrMatOrder(pcorr, order='hclust')
 sort.dist_mtrx <- order(rownames(dist_mtrx))
 dist_mtrx <- dist_mtrx[sort.dist_mtrx, sort.dist_mtrx]
-dist_mtrx_no <- dist_mtrx[pcorr.FPC, pcorr.FPC]
+dist_mtrx_no <- dist_mtrx[pcorr.HC, pcorr.HC]
 ###############################################################################
 
 # Show distance matrix
