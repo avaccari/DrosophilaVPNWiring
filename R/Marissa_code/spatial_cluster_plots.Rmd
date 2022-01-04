@@ -32,20 +32,20 @@ for(lc in all_lcs){
   lc_kclust = lc_pca_clust(pca_list$PCA, num_comp = compnum, num_clust = LC_k[[lc]], lc)
   k = lc_kclust$kmeans
   lc_syn = neuprint_get_synapses(names(k$cluster), roi="OL(R)") %>% as.data.frame() %>% mutate(bodyid = as.character(bodyid))
-  saveRDS(lc_syn, sprintf("LC_kmeans/%s_synapses_OL.rds", lc))
+  saveRDS(lc_syn, sprintf("output/LC_kmeans/%s_synapses_OL.rds", lc))
   
   LC_syn[[lc]] = left_join(lc_syn, data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), by='bodyid') %>% filter(prepost==1)
   #plotting ready dataframe
-  saveRDS(LC_syn[[lc]], sprintf("LC_kmeans/%s_syn_clust_k%i_plotting.rds", lc, LC_k[[lc]]))
+  saveRDS(LC_syn[[lc]], sprintf("output/LC_kmeans/%s_syn_clust_k%i_plotting.rds", lc, LC_k[[lc]]))
   # save neuron cluster assignments
-  saveRDS(data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), sprintf("LC_kmeans/%s_cluster_assignments_k%i.rds", lc, LC_k[[lc]])) 
+  saveRDS(data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), sprintf("outpu/LC_kmeans/%s_cluster_assignments_k%i.rds", lc, LC_k[[lc]])) 
 }
-saveRDS(LC_syn, "LC_kmeans/allLC_synapses.rds")
+saveRDS(LC_syn, "output/LC_kmeans/allLC_synapses.rds")
 ```
 
 After running the above code once, you can just read it in and adjust the plots.
 ```{r}
-LC_syn = readRDS("LC_kmeans/allLC_synapses.rds")
+LC_syn = readRDS("output/LC_kmeans/allLC_synapses.rds")
 ```
 
 # Plotting using plotly 3d interactive plot

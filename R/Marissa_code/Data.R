@@ -1,6 +1,6 @@
 ### Read in the output matrices for each LC. 
 # Contains the individual LCs (columns) and outputs with >10 synapses total (rows). 
-lc17out = read.csv("LC_outputs_v12/LC17outliersmeta.csv")
+lc17out = read.csv("output/LC_outputs_v12/LC17outliersmeta.csv")
 outrm = as.character(lc17out$bodyid)
 
 loom_list = c("LC6", "LC4", "LPLC2", "LPLC1", "LC12", "LC17")
@@ -15,7 +15,7 @@ LCs_interest = mark_lcs#c(loom_list, nonloom_list)
 mat_list = list()
 
 for (lc in LCs_interest){#c(loom_list, nonloom_list)){
-  mat_list[[lc]] = readRDS(file=sprintf("LC_outputs_v12/%s_LC_outputs_mat.rds", lc))
+  mat_list[[lc]] = readRDS(file=sprintf("output/LC_outputs_v12/%s_LC_outputs_mat.rds", lc))
   tmp = colnames(mat_list[[lc]][-c(1:3)]) %>% str_split_fixed(pattern = "_", n=2)
   #drop _weight from column names corresponding to LCs and set rownames to output body ids
   colnames(mat_list[[lc]])[-c(1:3)] = tmp[,1]
