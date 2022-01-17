@@ -83,9 +83,9 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
-post_type1 <- 'DNp02'  # Red
-post_type2 <- 'DNp11'  # Blue
+pre_type <- 'LPLC2'
+post_type1 <- 'PVLP071'  # Red
+post_type2 <- 'PVLP076'  # Blue
 
 # Grab the correct plane
 # NOTE: the FIRST plane specified is also use as projection plane
@@ -104,8 +104,13 @@ c_size_both <- 100  # Number of colors in the map
 # The coefficients for a specific VPN can be found running the
 # lobula_ranking.R script.
 # If all zeros, the figure will not be generated.
-proj_v <- c(983.6229896,  -0.5838685)  # Top25 for LC4
+# proj_v <- c(983.6229896,  -0.5838685)  # Top25 for LC4
+proj_v <- c(-476.2505,  0.2322217)  # Top25 for LPLC2
 # proj_v <- c(0, 0)
+
+# Artificial line offset to apply to the projection line for visualization purposes
+# line_offset <- 2000  # For LC4
+line_offset <- 0  # For LPLC2
 
 # When generating the gradients, sort the data by dorsal-ventral. If FALSE, the 
 # data will be sorted by anterior-posterior
@@ -623,7 +628,6 @@ grid.arrange(grad1, grad2, ncol=2)
 if (any(proj_v != 0)) {
 
   # Add an artificial offset to better show the process
-  line_offset <- 2000
   proj_v <- proj_v - c(line_offset, 0)
   
   # Find the unit vector
