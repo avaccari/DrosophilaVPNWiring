@@ -68,7 +68,7 @@ pre_type <- 'LC4'
 
 # Post to use for gradient definition. This post will also generate a single
 # plot
-post_grad <- 'Giant Fiber'
+post_grad <- 'DNp11'
 
 # Top (# of synapses) of post to consider
 top <- 12
@@ -116,8 +116,12 @@ top_post_ids <- cbind(top_post_ids, preBodyId=1:nrow(top_post_ids))
 # Select only the required coloumns for the final merge
 top_post_ids <- top_post_ids %>% select(pre.bodyID, preBodyId)
 
-# Merge with top_cnt
-top_cnt <- merge(top_cnt, top_post_ids)
+# Merge with top_cnt and isolate the desire post_grad at the beginning of the plot
+posts <- unique(top_cnt$post.type)
+top_cnt <- merge(top_cnt, top_post_ids) %>%
+  mutate(across(post.type, factor, levels=append(post_grad, sort(posts[posts!=post_grad]))))
+
+
 
 # Plot data
 ggplot() +
