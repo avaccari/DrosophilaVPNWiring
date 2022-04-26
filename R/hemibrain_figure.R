@@ -63,6 +63,7 @@ pre_type2 <- 'LPLC2'
 post_type11 <- 'DNp02'  
 post_type12 <- 'DNp11'  
 post_type13 <- 'DNp04'
+post_type14 <- 'Giant Fiber'
 post_type21 <- 'Giant Fiber'  
 
 # Plot window size
@@ -82,7 +83,7 @@ pre2 <- con %>% filter(pre.type==pre_type2)
 # Posts ----
 # Identify pre with synapses on posts and pull bodyIDs
 bodyIDs.pre1 <- pre1 %>%
-  filter(post.type==post_type11 | post.type==post_type12 | post.type==post_type13) %>%
+  filter(post.type==post_type11 | post.type==post_type12 | post.type==post_type13 | post.type==post_type14) %>%
   pull(pre.bodyID) %>%
   unique()
 
@@ -120,12 +121,20 @@ par3d('windowRect' = c(100, 100, win_siz, win_siz))
 plot3d(hemibrain.surf, alpha=0.1, col='lightblue')
 
 # Plot pre
+# Exclude a specific bodyID that we want to highlight
+# bodyIDs.pre1 = bodyIDs.pre1[bodyIDs.pre1 != 1809264255]
+
 plot3d(nlist[as.character(bodyIDs.pre1)], soma=TRUE, col='steelblue', add=TRUE)
+# plot3d(nlist[as.character(bodyIDs.pre1)], soma=TRUE, col='orange', add=TRUE)
+
+# Add the highlighted bodyID
+# plot3d(nlist[['1809264255']], soma=TRUE, col='red', lwd=4.0, add=TRUE)
 
 # Plot posts
 plot3d(giantF, lwd=2.0, col='black', add=TRUE)
 plot3d(dnp11, lwd=2.0, col='chartreuse3', add=TRUE)
 plot3d(dnp04, lwd=2.0, col='firebrick3', add=TRUE)
+
 
 
 
@@ -141,4 +150,6 @@ plot3d(nlist[as.character(bodyIDs.pre2)], soma=TRUE, col='orange', add=TRUE)
 
 # Plot posts
 plot3d(giantF, col='black', add=TRUE)
+
+
 
