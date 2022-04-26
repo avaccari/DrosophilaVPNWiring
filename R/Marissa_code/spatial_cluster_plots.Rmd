@@ -16,8 +16,14 @@ all_lcs = c("LC17", "LC12", "LC4", "LC6", "LPLC1", "LPLC2",
              "LC18", "LC20", "LC21", "LC22", "LC24", "LC25", 
              "LC26",  "LPLC4", "LC28b")
 
+#all_lcs = c('LC17','LC12','LC4')
+
+# Define the number of clusters to use with kmeans: 2 for LC17 and LC12, 3 for all others
+# LC_k = rep(3, length(all_lcs))  # To use clusters = 3 for all VPNs 
 LC_k = c(c(2, 2), rep(3, length(all_lcs)-2))
 names(LC_k) = all_lcs
+
+# Define min number of total synapses for a neuron to be considered
 LC_syn_count = rep(10, length(all_lcs))
 names(LC_syn_count) = all_lcs
 ```
@@ -25,27 +31,44 @@ names(LC_syn_count) = all_lcs
 # Run PCA and kmeans analysis on each LC population
 This code chunk only needs to be run once, since the kmeans clustering results will be saved to a file. 
 ```{r}
-compnum = 10
-LC_syn = list() #save the synapse locations, labeled by k means cluster, for 3d plotting
+compnum = 10  # Define the number of PC to use in the PCA
+LC_syn = list()  #save the synapse locations, labeled by k means cluster, for 3d plotting
+LC_plt = list()  # Store the PCA scree and the kmeans elbow plots
+all_lcs=c('LC4')
 for(lc in all_lcs){
+  # Evaluate PCA
   pca_list = lc_getpca(mat_list[[lc]], DN=NULL, syn_count = LC_syn_count[[lc]], rm_self = TRUE, str=lc)
+
+  # kmeans cluster using the 'compnum' top components
   lc_kclust = lc_pca_clust(pca_list$PCA, num_comp = compnum, num_clust = LC_k[[lc]], lc)
   k = lc_kclust$kmeans
-  lc_syn = neuprint_get_synapses(names(k$cluster), roi="OL(R)") %>% as.data.frame() %>% mutate(bodyid = as.character(bodyid))
-  saveRDS(lc_syn, sprintf("output/LC_kmeans/%s_synapses_OL.rds", lc))
+
+  # Store plots
+  LC_plt[[lc]] = list("scree" = pca_list$eigen_plot, "knee" = lc_kclust$withinss, "clusters" = lc_kclust$clusters)
   
+  # Grab the synapses from neuprint using all the bodyids from the clusters
+  lc_syn = neuprint_get_synapses(names(k$cluster), roi="OL(R)") %>% as.data.frame() %>% mutate(bodyid = as.character(bodyid))
+  saveRDS(lc_syn, sprintf("../../output/LC_kmeans/%s_synapses_OL.rds", lc))
+  
+  # Join the cluster number to the synapses table and save
   LC_syn[[lc]] = left_join(lc_syn, data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), by='bodyid') %>% filter(prepost==1)
   #plotting ready dataframe
-  saveRDS(LC_syn[[lc]], sprintf("output/LC_kmeans/%s_syn_clust_k%i_plotting.rds", lc, LC_k[[lc]]))
-  # save neuron cluster assignments
-  saveRDS(data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), sprintf("outpu/LC_kmeans/%s_cluster_assignments_k%i.rds", lc, LC_k[[lc]])) 
+  saveRDS(LC_syn[[lc]], sprintf("../../output/LC_kmeans/%s_syn_clust_k%i_plotting.rds", lc, LC_k[[lc]]))
+  
+  # save neuron cluster assignments (just body ID and cluster #)
+  saveRDS(data.frame(bodyid = names(k$cluster), cluster = as.character(k$cluster)), sprintf("../../output/LC_kmeans/%s_cluster_assignments_k%i.rds", lc, LC_k[[lc]])) 
 }
-saveRDS(LC_syn, "output/LC_kmeans/allLC_synapses.rds")
+
+# Save all synapses for all VPN with clustering info in a single file
+saveRDS(LC_syn, "../../output/LC_kmeans/allLC_synapses.rds")
+
+# Save all plots in a file
+saveRDS(LC_plt, "../../output/LC_kmeans/allLC_plots.rds")
 ```
 
 After running the above code once, you can just read it in and adjust the plots.
 ```{r}
-LC_syn = readRDS("output/LC_kmeans/allLC_synapses.rds")
+LC_syn = readRDS("../../output/LC_kmeans/allLC_synapses.rds")
 ```
 
 # Plotting using plotly 3d interactive plot
@@ -66,6 +89,5 @@ plot_ly(LC_df, x=~x, y=~y, z=~z,
 bar = data.frame(x=0,  y=24000, z=-35000:(-35000+2500))
 plot_ly(bar, x=~x, y=~y, z=~z,
         type="scatter3d", mode="lines", size=.1)
-
 ```
 

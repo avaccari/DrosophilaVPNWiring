@@ -70,6 +70,10 @@ all_vpns = c("LC4", "LPLC2",
              "LC18", "LC20", "LC21", "LC24", "LC25", "LC26",
              "LC28b")
 
+# Use fix coloring based on max number of clusters (if 0, automatical generate
+# color scale)
+max_clusters <- 3
+
 # Plot window size
 win_siz <- 500
 ###############################################################################
@@ -95,8 +99,13 @@ for (vpn in all_vpns) {
   # Evaluate number of clusters
   vpn_clust <- unique(vpn_dat$cluster)
   
-  # Prepare the color scale based on the number of clusters
-  col_vpn <- cet_pal(length(vpn_clust))
+  # Check if we have fix colors:
+  if (max_clusters != 0) {
+    # Prepare the color scale based on the number of clusters
+    col_vpn <- cet_pal(max_clusters)
+  } else {
+    col_vpn <- cet_pal(length(vpn_clust))
+  }
   
   # Extract and plot members of each class
   for (cl in vpn_clust) {
