@@ -64,6 +64,7 @@ while (rgl.cur() > 0) { rgl.close() }
 if (!exists('con')) {
   con <- readRDS("data/hemibrain_con0.rds")
 }
+
 if (!exists('nlist')) {
   nlist <- readRDS("data/nlist1.rds")
 }

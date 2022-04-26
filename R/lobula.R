@@ -8,6 +8,7 @@
 #   selection plane, the centroid of each pre neuron calculated using only
 #   the selected end points, the projection of the end points and the center of
 #   mass on the selection plane and the axes used to build the 2d image
+# - A 2d plot showing the projection of the centroids for the given VPN
 # - A 2d plot comparing the projections of the centroids for the two
 #   posts within the projection of the lobula on the selection plane. The plot
 #   also shows the weighted median (and weighted box plots) for the centers of
@@ -50,6 +51,7 @@ library(pracma)
 library(ks)
 library(matrixStats)
 library(egg)
+library(ggpmisc)
 
 
 # Clean everything up ----
@@ -83,8 +85,8 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
-post_type1 <- 'DNp02'  # Red
+pre_type <- 'LPLC2'
+post_type1 <- 'Giant Fiber'  # Red
 post_type2 <- 'DNp11'  # Blue
 
 # Grab the correct plane
@@ -114,7 +116,7 @@ line_offset <- 2000  # For LC4
 
 # When generating the gradients, sort the data by dorsal-ventral. If FALSE, the 
 # data will be sorted by anterior-posterior
-sort_by_dv <- FALSE
+sort_by_dv <- TRUE
 
 # Plot window size
 win_siz <- 500
@@ -328,6 +330,7 @@ for (i in 1:length(n_list_hull)) {
 # Project the hull end points on the 3D plane in yellow.
 end_pts_hull.proj <- plane.proj(end_pts_hull, w_norm, -w0)
 
+
 # Project the hull endpoints on the 2D plane
 Xep_hull <- as.matrix(sweep(end_pts_hull.proj, 2, center)) %*% unitX
 Yep_hull <- as.matrix(sweep(end_pts_hull.proj, 2, center)) %*% unitY
@@ -346,11 +349,41 @@ if (sort_by_dv==TRUE) {
 # Add index as column
 ctrs.plane.sorted$idx <- as.numeric(rownames(ctrs.plane.sorted))
 
-# Generate the plot for post1
+# Evaluate the limits for the plots
 limits1 <- c(0, max(ctrs.plane$n.post1))
 breaks1 <- round(c(0, .25, .5, .75, 1) * max(ctrs.plane$n.post1))
 limits2 <- c(0, max(ctrs.plane$n.post2))
 breaks2 <- round(c(0, .25, .5, .75, 1) * max(ctrs.plane$n.post2))
+
+# Plot projection of centroids
+ggplot() +
+  coord_fixed() +
+  xlab('A-P axis, um') +
+  ylab('D-V axis, um') +
+  geom_polygon(data=end_pts_hull.plane[lo, ],
+               aes(x=0.008 * X1, y=0.008 * X2),
+               alpha=0.3) +
+  geom_point(data=ctrs.plane,
+             aes(x=0.008 * X1, y=0.008 * X2)) +
+  scale_color_gradientn(name="synapses\ncount", 
+                        colours=col_single,
+                        breaks=breaks1,
+                        limits=limits1) +
+  scale_size_continuous(name="synapses\ncount", 
+                        limits=limits1,
+                        breaks=breaks1,
+                        range=c(0, 7)) +
+  guides(colour=guide_legend(), size=guide_legend()) +
+  ggtitle(paste(pre_type, 'Dendritic map')) +
+  theme(plot.title=element_text(hjust=0.5))+
+  theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
+        axis.text.y = element_text(face="bold", color="black", size=15, angle=0),
+        plot.title = element_text(face="bold", color="black", size=15),
+        axis.title.y = element_text(size=15),
+        axis.title.x = element_text(size=15))
+
+
+# Generate the plot for post1
 proj1 <- ggplot() +
          coord_fixed() +
          xlab('A-P axis, um') +
@@ -551,14 +584,20 @@ ggplot() +
 max_syn <- max(ctrs.plane.sorted$n.post1, ctrs.plane.sorted$n.post2)
 
 if (sort_by_dv==FALSE) {
-  grad1 <- ggplot() +
+  grad1 <- ggplot(data=ctrs.plane.sorted,
+                  aes(x=0.008 * X1, y=n.post1, colour=n.post1)) +
     coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X1)) / max_syn)) +
     xlab('A-P axis, um') +
     ylab('Number of synapses') +
     ylim(0, max_syn) +
-    geom_point(data=ctrs.plane.sorted,
-               aes(x=0.008 * X1, y=n.post1, colour=n.post1))+
+    geom_point()+
+    geom_smooth(method = "lm", se=FALSE, color="black") +
     scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    geom_point() +
+    geom_smooth(method='lm', formula=y~x, color='black') +
+    stat_poly_eq(formula = y~x, 
+                 aes(label = paste(..rr.label..)), 
+                 parse = TRUE) +
     ggtitle(paste(pre_type, '>', post_type1)) +
     theme(plot.title=element_text(hjust=0.5))+
     theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
@@ -567,14 +606,20 @@ if (sort_by_dv==FALSE) {
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15)) 
 
-  grad2 <- ggplot() +
+  grad2 <- ggplot(data=ctrs.plane.sorted,
+                  aes(x=0.008 * X1, y=n.post2, colour=n.post2)) +
     coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X1)) / max_syn)) +
     xlab('A-P axis, um') +
     ylab('Number of synapses') +
     ylim(0, max_syn) +
-    geom_point(data=ctrs.plane.sorted,
-               aes(x=0.008 * X1, y=n.post2, colour=n.post2)) +
+    geom_point() +
+    geom_smooth(method = "lm", se=FALSE, color="black") +
     scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    geom_point() +
+    geom_smooth(method='lm', formula=y~x, color='black') +
+    stat_poly_eq(formula = y~x, 
+                 aes(label = paste(..rr.label..)), 
+                 parse = TRUE) +
     ggtitle(paste(pre_type, '>', post_type2)) +
     theme(plot.title=element_text(hjust=0.5))+
     theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
@@ -582,15 +627,27 @@ if (sort_by_dv==FALSE) {
           plot.title = element_text(face="bold", color="black", size=15),
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15)) 
+
+  # Calculate R^2 for the plots
+  rsq1 <- summary(lm(n.post1 ~ X1, data=ctrs.plane.sorted))$r.squared
+  rsq2 <- summary(lm(n.post2 ~ X1, data=ctrs.plane.sorted))$r.squared
+  cat('R-squared for', post_type1, ':', rsq1)
+  cat('R-squared for', post_type2, ':', rsq2)
 } else {
-  grad1 <- ggplot() +
+  grad1 <- ggplot(data=ctrs.plane.sorted,
+                  aes(x=0.008 * X2, y=n.post1, colour=n.post1)) +
     coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X2)) / max_syn)) +
     xlab('D-V axis, um') +
     ylab('Number of synapses') +
     ylim(0, max_syn) +
-    geom_point(data=ctrs.plane.sorted,
-               aes(x=0.008 * X2, y=n.post1, colour=n.post1))+
+    geom_point() +
+    geom_smooth(method = "lm", se=FALSE, color="black") +
     scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    geom_point() +
+    geom_smooth(method='lm', formula=y~x, color='black') +
+    stat_poly_eq(formula = y~x, 
+                 aes(label = paste(..rr.label..)), 
+                 parse = TRUE) +
     ggtitle(paste(pre_type, '>', post_type1)) +
     theme(plot.title=element_text(hjust=0.5))+
     theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
@@ -599,14 +656,20 @@ if (sort_by_dv==FALSE) {
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15)) 
   
-  grad2 <- ggplot() +
+  grad2 <- ggplot(data=ctrs.plane.sorted,
+                  aes(x=0.008 * X2, y=n.post2, colour=n.post2)) +
     coord_fixed(ratio=(0.008 * diff(range(ctrs.plane.sorted$X2)) / max_syn)) +
     xlab('D-V axis, um') +
     ylab('Number of synapses') +
     ylim(0, max_syn) +
-    geom_point(data=ctrs.plane.sorted,
-               aes(x=0.008 * X2, y=n.post2, colour=n.post2)) +
+    geom_point() +
+    geom_smooth(method = "lm", se=FALSE, color="black") +
     scale_color_gradientn(colours=cet_pal(nrow(ctrs.plane.sorted))) +
+    geom_point() +
+    geom_smooth(method='lm', formula=y~x, color='black') +
+    stat_poly_eq(formula = y~x, 
+                 aes(label = paste(..rr.label..)), 
+                 parse = TRUE) +
     ggtitle(paste(pre_type, '>', post_type2)) +
     theme(plot.title=element_text(hjust=0.5))+
     theme(axis.text.x = element_text(face="bold", color="black", size=15, angle=0),
@@ -615,6 +678,11 @@ if (sort_by_dv==FALSE) {
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15)) 
   
+  # Calculate R^2 for the plots
+  rsq1 <- summary(lm(n.post1 ~ X2, data=ctrs.plane.sorted))$r.squared
+  rsq2 <- summary(lm(n.post2 ~ X2, data=ctrs.plane.sorted))$r.squared
+  cat('R-squared for', post_type1, ':', rsq1)
+  cat('R-squared for', post_type2, ':', rsq2)
 }
 # Combine and show the plots
 grid.arrange(grad1, grad2, ncol=2)
@@ -710,3 +778,4 @@ if (any(proj_v != 0)) {
           axis.title.y = element_text(size=15),
           axis.title.x = element_text(size=15))
 }
+
