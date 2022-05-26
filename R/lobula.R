@@ -83,11 +83,13 @@ source('R/aux_functions.R')
 
 
 
+
+
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LPLC2'
-post_type1 <- 'Giant Fiber'  # Red
-post_type2 <- 'DNp11'  # Blue
+pre_type <- 'LC10'
+post_type1 <- 'LC10'  # Red
+post_type2 <- 'DNp09'  # Blue
 
 # Grab the correct plane
 # NOTE: the FIRST plane specified is also use as projection plane
@@ -119,7 +121,7 @@ line_offset <- 2000  # For LC4
 sort_by_dv <- TRUE
 
 # Plot window size
-win_siz <- 500
+win_siz <- 1000
 ###############################################################################
 
 
@@ -161,6 +163,12 @@ post[is.na(post)] <- 0
 
 # Get the neuron list from the posts bodyIDs
 n_list <- nlist[as.character(post$pre.bodyID)]
+
+# Drop potential NAs
+n_list <- n_list[!is.na(names(n_list))]
+dropped <- setdiff(as.character(post$pre.bodyID), names(n_list))
+post <- subset(post, post$pre.bodyID != dropped)
+
 
 # 3D analysis ----
 nopen3d()
@@ -308,6 +316,12 @@ hull <- pre %>%
 
 # Get the neuron list from the posts bodyIDs
 n_list_hull <- nlist[as.character(hull)]
+
+# Drop potential NAs
+n_list_hull <- n_list_hull[!is.na(names(n_list_hull))]
+# dropped <- setdiff(as.character(post$pre.bodyID), names(n_list_hull))
+# post <- subset(post, post$pre.bodyID != dropped)
+
 
 # Select preserved end points for each neuron
 for (i in 1:length(n_list_hull)) {
