@@ -6,7 +6,7 @@
 # Based on spatial_cluster_plots.Rmd.
 #
 # Generates:
-# - One 3D plot for each of the VPN idenitfying the detected clusters in 
+# - One 3D plot for each of the VPN idenitfying the detected clusters in
 #   different colors.
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -36,18 +36,22 @@ library(cetcolor)
 # Except the connection and skeleton files if they are already loaded.
 items <- ls()
 # items <- items[items != 'con']  # Comment this line to reload the connection file
-items <- items[items != 'nlist']  # Comment this line to reload the skeleton file
-rm(list=items)
+items <- items[items != "nlist"] # Comment this line to reload the skeleton file
+rm(list = items)
 
 # Close any open plotting windows
-while (dev.cur() > 1) { dev.off() }
-while (rgl.cur() > 0) { rgl.close() }
+while (dev.cur() > 1) {
+  dev.off()
+}
+while (rgl.cur() > 0) {
+  rgl.close()
+}
 
 # Load datasets
 # if (!exists('con')) {
 #   con <- readRDS("data/hemibrain_con0.rds")
 # }
-if (!exists('nlist')) {
+if (!exists("nlist")) {
   nlist <- readRDS("data/nlist1.rds")
 }
 
@@ -62,13 +66,12 @@ if (!exists('nlist')) {
 ###############################################################################
 # Define items to analyze here
 # List of VPNs of interest
-all_vpns = c("LC4", "LPLC2",
-             "LPLC4", "LC22",
-             "LC6", "LC9",
-             "LC12", "LC17",
-             "LPLC1", "LC10", "LC11", "LC13", "LC15", "LC16",
-             "LC18", "LC20", "LC21", "LC24", "LC25", "LC26",
-             "LC28b")
+all_vpns <- c(
+  "LC17", "LC12", "LC4", "LC6", "LPLC1", "LPLC2",
+  "LC9", "LC10", "LC11", "LC13", "LC15", "LC16",
+  "LC18", "LC20", "LC21", "LC22", "LC24", "LC25",
+  "LC26", "LPLC4"
+)
 
 # Use fix coloring based on max number of clusters (if 0, automatical generate
 # color scale)
@@ -91,14 +94,14 @@ vpn_syn <- readRDS("output/LC_kmeans/allLC_synapses.rds")
 for (vpn in all_vpns) {
   # Extract data from list
   vpn_dat <- vpn_syn[[vpn]]
-  
+
   # Plot
   nopen3d()
-  par3d('windowRect' = c(100, 100, win_siz, win_siz))
+  par3d("windowRect" = c(100, 100, win_siz, win_siz))
 
   # Evaluate number of clusters
   vpn_clust <- unique(vpn_dat$cluster)
-  
+
   # Check if we have fix colors:
   if (max_clusters != 0) {
     # Prepare the color scale based on the number of clusters
@@ -106,29 +109,28 @@ for (vpn in all_vpns) {
   } else {
     col_vpn <- cet_pal(length(vpn_clust))
   }
-  
+
   # Extract and plot members of each class
   for (cl in vpn_clust) {
     # Find unique bodyids for each class
-    vpn_class <- vpn_dat %>% 
-      filter(cluster==cl) %>%
-      select('bodyid') %>%
+    vpn_class <- vpn_dat %>%
+      filter(cluster == cl) %>%
+      select("bodyid") %>%
       unique()
-    
-    # Plot the neuron in each of the class individually (we need to do this beacuse
-    # we will get an error if we use nlist[vpn_class$bodyid] and
+
+    # Plot the neuron in each of the class individually (we need to do this
+    # beacuse we will get an error if we use nlist[vpn_class$bodyid] and
     # some of the neurons are not in nlist)
     for (bid in vpn_class$bodyid) {
       n <- nlist[[bid]]
       if (!is.null(n)) {
-        plot3d(n, lw=3, col=col_vpn[as.numeric(cl)], add=TRUE)
+        plot3d(n, lw = 3, col = col_vpn[as.numeric(cl)], add = TRUE)
       }
     }
   }
-  
+
   # Add boxes for LC4
-  if (vpn=='LC4') {
+  if (vpn == "LC4") {
     box3d()
   }
 }
-

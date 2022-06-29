@@ -34,20 +34,24 @@ library(tidyverse)
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
 items <- ls()
-items <- items[items != 'con']  # Comment this line to reload the connection file
-items <- items[items != 'nlist']  # Comment this line to reload the skeleton file
-rm(list=items)
+items <- items[items != "con"] # Comment this line to reload the connection file
+items <- items[items != "nlist"] # Comment this line to reload the skeleton file
+rm(list = items)
 
 # Close any open plotting windows
-while (dev.cur() > 1) { dev.off() }
-while (rgl.cur() > 0) { rgl.close() }
+while (dev.cur() > 1) {
+  dev.off()
+}
+while (rgl.cur() > 0) {
+  rgl.close()
+}
 
 # Load datasets
-if (!exists('con')) {
-  con <- readRDS("hemibrain_con0.rds")
+if (!exists("con")) {
+  con <- readRDS("data/hemibrain_con0.rds")
 }
-if (!exists('nlist')) {
-  nlist <- readRDS("nlist1.rds")
+if (!exists("nlist")) {
+  nlist <- readRDS("data/nlist1.rds")
 }
 
 
@@ -61,7 +65,7 @@ if (!exists('nlist')) {
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC4'
+pre_type <- "LC4"
 
 # top % of synapses required
 top <- 0.82
@@ -74,8 +78,8 @@ top <- 0.82
 
 
 # Extract all pre.type synapses excluding with pre
-pre <- con %>% 
-  filter(pre.type==pre_type, post.type != pre_type)
+pre <- con %>%
+  filter(pre.type == pre_type, post.type != pre_type)
 
 # Extract the top post in terms of synapses
 top_posts <- pre %>%
@@ -95,36 +99,44 @@ top_posts_select <- top_posts[top_posts$cml <= top, ]
 
 # Create scree plot
 ggplot() +
-  geom_point(data=top_posts,
-             aes(x=post.type, y=norm)) +
-  scale_x_discrete(limits=top_posts$post.type) +
+  geom_point(
+    data = top_posts,
+    aes(x = post.type, y = norm)
+  ) +
+  scale_x_discrete(limits = top_posts$post.type) +
   geom_line() +
-  labs(title=paste("Scree plot: synapses percentage vs posts (", pre_type, ")")) +
-  xlab('Post') + 
-  ylab('Percentage of synapses') +
-  theme(axis.text.x=element_text(angle=90))
+  labs(title = paste("Scree plot: synapses percentage vs posts (", pre_type, ")")) +
+  xlab("Post") +
+  ylab("Percentage of synapses") +
+  theme(axis.text.x = element_text(angle = 90))
 
 # Create cumulative plot
 ggplot() +
-  geom_point(data=top_posts,
-             aes(x=post.type, y=cml)) +
-  scale_x_discrete(limits=top_posts$post.type) +
+  geom_point(
+    data = top_posts,
+    aes(x = post.type, y = cml)
+  ) +
+  scale_x_discrete(limits = top_posts$post.type) +
   geom_line() +
-  labs(title=paste("Cumulative plot: synapses percentage vs posts (", pre_type, ")")) +
-  xlab('Post') + 
-  ylab('Percentage of synapses') +
-  theme(axis.text.x=element_text(angle=90)) +
-  geom_hline(yintercept=top) +
-  geom_point(data=top_posts_select,
-             aes(x=post.type, y=cml), 
-             shape=1,
-             size=5,
-             col='red') +
-  geom_text(data=top_posts_select,
-            aes(x=post.type, 
-                y=cml, 
-                label=post.type,
-                hjust='left'),
-            nudge_x=5)
-  
-
+  labs(title = paste("Cumulative plot: synapses percentage vs posts (", pre_type, ")")) +
+  xlab("Post") +
+  ylab("Percentage of synapses") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  geom_hline(yintercept = top) +
+  geom_point(
+    data = top_posts_select,
+    aes(x = post.type, y = cml),
+    shape = 1,
+    size = 5,
+    col = "red"
+  ) +
+  geom_text(
+    data = top_posts_select,
+    aes(
+      x = post.type,
+      y = cml,
+      label = post.type,
+      hjust = "left"
+    ),
+    nudge_x = 5
+  )

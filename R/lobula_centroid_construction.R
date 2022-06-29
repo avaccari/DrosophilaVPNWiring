@@ -4,8 +4,8 @@
 # Author:  Andrea Vaccari (avaccari@middlebury.edu)
 #
 # Generates:
-# - A 3d plot showing how the centroids are evaluated using body IDs specified by
-#   the user.
+# - A 3d plot showing how the centroids are evaluated using body IDs specified
+#   by the user.
 #
 # Copyright (c) 2021 Andrea Vaccari
 #

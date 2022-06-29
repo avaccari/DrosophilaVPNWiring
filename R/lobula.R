@@ -15,8 +15,8 @@
 #   mass (weighted by the number of synapses with pre)
 # - A 2d plot showing the distance between the weighted medians (two versions).
 # - A 2d plot showing the gradient of synapses sorted using the position of the
-#   centroids with respect to either the anterior-posterior or the dorsal-ventral 
-#   as specified by the user
+#   centroids with respect to either the anterior-posterior or the
+#   dorsal-ventral as specified by the user
 #
 #
 # Copyright (c) 2021 Andrea Vaccari
@@ -57,8 +57,8 @@ library(ggpmisc)
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
 items <- ls()
-items <- items[items != 'con']  # Comment this line to reload the connection file
-items <- items[items != 'nlist']  # Comment this line to reload the skeleton file
+items <- items[items != 'con']  # Comment to reload the connection file
+items <- items[items != 'nlist']  # Comment to reload the skeleton file
 rm(list=items)
 
 # Close any open plotting windows
@@ -87,9 +87,9 @@ source('R/aux_functions.R')
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- 'LC10'
-post_type1 <- 'LC10'  # Red
-post_type2 <- 'DNp09'  # Blue
+pre_type <- 'LC4'
+post_type1 <- 'DNp11'  # Red
+post_type2 <- 'DNp04'  # Blue
 
 # Grab the correct plane
 # NOTE: the FIRST plane specified is also use as projection plane
@@ -167,8 +167,9 @@ n_list <- nlist[as.character(post$pre.bodyID)]
 # Drop potential NAs
 n_list <- n_list[!is.na(names(n_list))]
 dropped <- setdiff(as.character(post$pre.bodyID), names(n_list))
-post <- subset(post, post$pre.bodyID != dropped)
-
+if (length(dropped) != 0) {
+  post <- subset(post, post$pre.bodyID != dropped)
+}
 
 # 3D analysis ----
 nopen3d()
@@ -341,7 +342,7 @@ for (i in 1:length(n_list_hull)) {
   }
 }
 
-# Project the hull end points on the 3D plane in yellow.
+# Project the hull end points on the 3D plane.
 end_pts_hull.proj <- plane.proj(end_pts_hull, w_norm, -w0)
 
 

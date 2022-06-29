@@ -27,10 +27,7 @@
 #
 # TODO:
 #
-library(natverse)
-library(hemibrainr)
-library(tidyverse)
-
+r.
 # Clean everything up ----
 # Except the connection and skeleton files if they are already loaded.
 items <- ls()
@@ -58,8 +55,8 @@ load("data/hemibrain_figure.rda")
 
 ###############################################################################
 # Define items to analyze here
-pre_type1 <- 'LC4'
-pre_type2 <- 'LPLC2'
+pre_type1 <- 'LC20'
+pre_type2 <- 'LC28b'
 post_type11 <- 'DNp02'  
 post_type12 <- 'DNp11'  
 post_type13 <- 'DNp04'
@@ -67,7 +64,7 @@ post_type14 <- 'Giant Fiber'
 post_type21 <- 'Giant Fiber'  
 
 # Plot window size
-win_siz <- 500
+win_siz <- 1000
 ###############################################################################
 
 
@@ -83,12 +80,12 @@ pre2 <- con %>% filter(pre.type==pre_type2)
 # Posts ----
 # Identify pre with synapses on posts and pull bodyIDs
 bodyIDs.pre1 <- pre1 %>%
-  filter(post.type==post_type11 | post.type==post_type12 | post.type==post_type13 | post.type==post_type14) %>%
+#  filter(post.type==post_type11 | post.type==post_type12 | post.type==post_type13 | post.type==post_type14) %>%
   pull(pre.bodyID) %>%
   unique()
 
 bodyIDs.pre2 <- pre2 %>%
-  filter(post.type==post_type21) %>%
+#  filter(post.type==post_type21) %>%
   pull(pre.bodyID) %>%
   unique()
 
@@ -149,7 +146,7 @@ plot3d(nlist[as.character(bodyIDs.pre1)], soma=TRUE, col='steelblue', add=TRUE)
 plot3d(nlist[as.character(bodyIDs.pre2)], soma=TRUE, col='orange', add=TRUE)
 
 # Plot posts
-plot3d(giantF, col='black', add=TRUE)
+#plot3d(giantF, col='black', add=TRUE)
 
 
 
