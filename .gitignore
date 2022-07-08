@@ -4,3 +4,4 @@
 .Ruserdata
 .vscode
 *.Rproj
+.DS_store
