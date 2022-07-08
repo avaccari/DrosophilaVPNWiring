@@ -32,7 +32,7 @@ plane.proj <- function(points, plane.normal, plane.offset) {
 line.proj <- function(points, line.unit.vector, origin) {
   transl <- sweep(points, 2, origin)
   proj <- as.matrix(transl) %*% drop(line.unit.vector)
-  proj <- sweep(drop(proj %o% line.unit.vector), 2, origin, FUN='+')
+  proj <- sweep(drop(proj %o% line.unit.vector), 2, origin, FUN = "+")
 }
 
 # Distance from the plane function
@@ -45,85 +45,112 @@ plane.dist <- function(points, plane.normal, origin) {
 # Define two set o planes: one to identify the region to be considered lobula
 # and one to identify the region to be considered glomerulus.
 # It is possible to identify multiple planes and which side of the plane should
-# be included.
+# be included. The first plane is the one that is used for the projections and
+# the evaluation of the reference system on the plane.
 # The format is a matrix where each line is a plane. The first 4 values are the
 # a, b, c, and d of the plane (with a, b, and c identifying the normal to the
-# plane and d the offset) and the fifth value specifies if we should preserve 
+# plane and d the offset) and the fifth value specifies if we should preserve
 # the synapse above (1) or below (-1) the plane.
 # Each plane is considered one after the other and the final result is the
 # intersection of the setes of synapses preserved by each plane.
 # E.g.
 # planes <- matrix(c(1, 0, 0, -11000, -1,
 #                    1, 0, 0, -9000, 1), ncol=5, byrow=TRUE)
-get.plane <- function(pre='LC4', type='glomerulus') {
-  if (type=='glomerulus' | type=='glo') {
-    switch(
-      pre,
-      'LC4' = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol=5, byrow=TRUE),
-      'LC6' = matrix(c(0.7687760,  0.5688942, -0.2921349, -9200, 1,
-                       0.7687760,  0.5688942, -0.2921349, -16200, -1,
-                       0.2, 0.1, 1, -23000, 1), ncol=5, byrow=TRUE),
-      'LC9' = matrix(c(0.5, 0.3, -0.4, -2700, 1,
-                       0.2, -0.2, 1, -16000, 1), ncol=5, byrow=TRUE),
-      'LC10' = matrix(c(0.5, 0.3, -0.4, -6500, 1), ncol=5, byrow=TRUE),
-      'LC11' = matrix(c(0.7687760,  0.5688942, -0.2921349, -10000, 1), ncol=5, byrow=TRUE),
-      'LC12' = matrix(c(0.7687760,  0.5688942, -0.2921349, -7200, 1,
-                        0.7687760,  0.5688942, -0.2921349, -11200, -1), ncol=5, byrow=TRUE),
-      'LC13' = matrix(c(0.5, 0.3, -0.4, 1000, 1), ncol=5, byrow=TRUE),
-      'LC15' = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol=5, byrow=TRUE),
-      'LC16' = matrix(c(0.5, 0.3, -0.4, -500, 1), ncol=5, byrow=TRUE),
-      'LC17' = matrix(c(0.7687760,  0.5688942, -0.2921349, -7200, 1,
-                        0.7687760,  0.5688942, -0.2921349, -11200, -1), ncol=5, byrow=TRUE),
-      'LC18' = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol=5, byrow=TRUE),
-      'LC20' = matrix(c(0.5, 0.3, -0.4, 100, 1), ncol=5, byrow=TRUE),
-      'LC21' = matrix(c(0.5, 0.3, -0.4, 500, 1), ncol=5, byrow=TRUE),
-      'LC22' = matrix(c(1, 0, 0, -14500, 1), ncol=5, byrow=TRUE),
-      'LC24' = matrix(c(0.5, 0.3, -0.4, 500, 1), ncol=5, byrow=TRUE),
-      'LC25' = matrix(c(0.5, 0.3, -0.4, 800, 1), ncol=5, byrow=TRUE),
-      'LC26' = matrix(c(0.5, 0.3, -0.4, 800, 1), ncol=5, byrow=TRUE),
-      'LPLC1' = matrix(c(0.7687760,  0.5688942, -0.8921349, 6000, 1), ncol=5, byrow=TRUE),
-      'LPLC2' = matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE),
-      'LPLC4' = matrix(c(1, 0, -0.2, -3500, 1), ncol=5, byrow=TRUE)
+get.plane <- function(pre = "LC4", type = "glomerulus") {
+  if (type == "glomerulus" | type == "glo") {
+    switch(pre,
+      "LC4" = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol = 5, byrow = TRUE),
+      "LC6" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -9200, 1,
+        0.7687760, 0.5688942, -0.2921349, -16200, -1,
+        0.2, 0.1, 1, -23000, 1
+      ), ncol = 5, byrow = TRUE),
+      "LC9" = matrix(c(
+        0.5, 0.3, -0.4, -2700, 1,
+        0.2, -0.2, 1, -16000, 1
+      ), ncol = 5, byrow = TRUE),
+      "LC10" = matrix(c(0.5, 0.3, -0.4, -6500, 1), ncol = 5, byrow = TRUE),
+      "LC11" = matrix(c(0.7687760, 0.5688942, -0.2921349, -10000, 1), ncol = 5, byrow = TRUE),
+      "LC12" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -7200, 1,
+        0.7687760, 0.5688942, -0.2921349, -11200, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC13" = matrix(c(0.5, 0.3, -0.4, 1000, 1), ncol = 5, byrow = TRUE),
+      "LC15" = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol = 5, byrow = TRUE),
+      "LC16" = matrix(c(0.5, 0.3, -0.4, -500, 1), ncol = 5, byrow = TRUE),
+      "LC17" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -7200, 1,
+        0.7687760, 0.5688942, -0.2921349, -11200, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC18" = matrix(c(0.5, 0.3, -0.4, 1500, 1), ncol = 5, byrow = TRUE),
+      "LC20" = matrix(c(0.5, 0.3, -0.4, 100, 1), ncol = 5, byrow = TRUE),
+      "LC21" = matrix(c(0.5, 0.3, -0.4, 500, 1), ncol = 5, byrow = TRUE),
+      "LC22" = matrix(c(1, 0, 0, -14500, 1), ncol = 5, byrow = TRUE),
+      "LC24" = matrix(c(0.5, 0.3, -0.4, 500, 1), ncol = 5, byrow = TRUE),
+      "LC25" = matrix(c(0.5, 0.3, -0.4, 800, 1), ncol = 5, byrow = TRUE),
+      "LC26" = matrix(c(0.5, 0.3, -0.4, 800, 1), ncol = 5, byrow = TRUE),
+      "LPLC1" = matrix(c(0.7687760, 0.5688942, -0.8921349, 6000, 1), ncol = 5, byrow = TRUE),
+      "LPLC2" = matrix(c(1, 0, -0.2, -3500, 1), ncol = 5, byrow = TRUE),
+      "LPLC4" = matrix(c(1, 0, -0.2, -3500, 1), ncol = 5, byrow = TRUE)
     )
-  } else if (type=='lobula' | type=='lob') {
-    switch(
-      pre,
-      'LC4' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE),
-      'LC6' = matrix(c(0.80687760,  0.5688942, -0.3921349, -4000, 1), ncol=5, byrow=TRUE),
-      'LC9' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                       0.76, 0.16, -2.5, 37700, 1), ncol=5, byrow=TRUE),
-      'LC10' = matrix(c(0.6687760,  0.5688942, -0.5921349, 1200, 1,
-                        0.7,  0.2, -1.8, 29000, 1,
-                        -1.5,  -0.3, -7, 270000, -1), ncol=5, byrow=TRUE),
-      'LC11' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                        -1.4, 0.1, 1.1, -17000, -1), ncol=5, byrow=TRUE),
-      'LC12' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE),
-      'LC13' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5800, 1), ncol=5, byrow=TRUE),
-      'LC15' = matrix(c(0.6687760,  0.4688942, -0.2921349, -3700, 1), ncol=5, byrow=TRUE),
-      'LC16' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                        0.1, 0.1, 1.1, -42000, 1), ncol=5, byrow=TRUE),
-      'LC17' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1), ncol=5, byrow=TRUE),
-      'LC18' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                        0.7687760,  0.5688942, -0.0921349, -5200, -1), ncol=5, byrow=TRUE),
-      'LC20' = matrix(c(0.6687760,  0.4688942, -0.3921349, -2200, 1,
-                        0.6, 0.3, -0.1, -8200, 1), ncol=5, byrow=TRUE),
-      'LC21' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                        0.7687760,  0.7688942, 1.0921349, -29200, -1), ncol=5, byrow=TRUE),
-      'LC22' = matrix(c(0.7687760,  0.5688942, -0.3921349, -3200, 1), ncol=5, byrow=TRUE),
-      'LC24' = matrix(c(0.6687760,  0.4688942, -0.2521349, -5100, 1), ncol=5, byrow=TRUE),
-      'LC25' = matrix(c(0.6687760,  0.4688942, -0.2521349, -5200, 1), ncol=5, byrow=TRUE),
-      'LC26' = matrix(c(0.6687760,  0.4688942, -0.2521349, -5200, 1), ncol=5, byrow=TRUE),
-      'LPLC1' = matrix(c(0.7687760,  0.5688942, -0.3921349, -3500, 1,
-                         0.7687760,  0.5688942, -0.2921349, 500, -1,
-                         0.7687760,  0.5688942, -0.8921349, 6000, 1), ncol=5, byrow=TRUE),
-      'LPLC2' = matrix(c(0.7687760,  0.5688942, -0.2921349, -5200, 1,
-                         0.7687760,  0.5688942, -0.2921349, -1000, -1,
-                         0.7687760,  0.5688942, -0.8921349, 6300, 1), ncol=5, byrow=TRUE),
-      'LPLC4' = matrix(c(0.7687760,  0.5688942, -0.2921349, -6500, 1,
-                         0.7687760,  0.5688942, -0.2921349, -1000, -1,
-                         0.7687760,  0.5688942, -0.9921349, 7200, 1), ncol=5, byrow=TRUE)
+  } else if (type == "lobula" | type == "lob") {
+    switch(pre,
+      "LC4" = matrix(c(0.7687760, 0.5688942, -0.2921349, -5200, 1), ncol = 5, byrow = TRUE),
+      "LC6" = matrix(c(0.80687760, 0.5688942, -0.3921349, -4000, 1), ncol = 5, byrow = TRUE),
+      "LC9" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        0.76, 0.16, -2.5, 37700, 1
+      ), ncol = 5, byrow = TRUE),
+      "LC10" = matrix(c(
+        0.6687760, 0.5688942, -0.5921349, 1200, 1,
+        0.7, 0.2, -1.8, 29000, 1,
+        -1.5, -0.3, -7, 270000, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC11" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        -1.4, 0.1, 1.1, -17000, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC12" = matrix(c(0.7687760, 0.5688942, -0.2921349, -5200, 1), ncol = 5, byrow = TRUE),
+      "LC13" = matrix(c(0.7687760, 0.5688942, -0.2921349, -5800, 1), ncol = 5, byrow = TRUE),
+      "LC15" = matrix(c(0.6687760, 0.4688942, -0.2921349, -3700, 1), ncol = 5, byrow = TRUE),
+      "LC16" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        0.1, 0.1, 1.1, -42000, 1
+      ), ncol = 5, byrow = TRUE),
+      "LC17" = matrix(c(0.7687760, 0.5688942, -0.2921349, -5200, 1), ncol = 5, byrow = TRUE),
+      "LC18" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        0.7687760, 0.5688942, -0.0921349, -5200, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC20" = matrix(c(
+        0.6687760, 0.4688942, -0.3921349, -2200, 1,
+        0.6, 0.3, -0.1, -8200, 1
+      ), ncol = 5, byrow = TRUE),
+      "LC21" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        0.7687760, 0.7688942, 1.0921349, -29200, -1
+      ), ncol = 5, byrow = TRUE),
+      "LC22" = matrix(c(0.7687760, 0.5688942, -0.3921349, -3200, 1), ncol = 5, byrow = TRUE),
+      "LC24" = matrix(c(0.6687760, 0.4688942, -0.2521349, -5100, 1), ncol = 5, byrow = TRUE),
+      "LC25" = matrix(c(0.6687760, 0.4688942, -0.2521349, -5200, 1), ncol = 5, byrow = TRUE),
+      "LC26" = matrix(c(0.6687760, 0.4688942, -0.2521349, -5200, 1), ncol = 5, byrow = TRUE),
+      "LPLC1" = matrix(c(
+        0.7687760, 0.5688942, -0.3921349, -3500, 1,
+        0.7687760, 0.5688942, -0.2921349, 500, -1,
+        0.7687760, 0.5688942, -0.8921349, 6000, 1
+      ), ncol = 5, byrow = TRUE),
+      "LPLC2" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -5200, 1,
+        0.7687760, 0.5688942, -0.2921349, -1000, -1,
+        0.7687760, 0.5688942, -0.8921349, 6300, 1
+      ), ncol = 5, byrow = TRUE),
+      "LPLC4" = matrix(c(
+        0.7687760, 0.5688942, -0.2921349, -6500, 1,
+        0.7687760, 0.5688942, -0.2921349, -1000, -1,
+        0.7687760, 0.5688942, -0.9921349, 7200, 1
+      ), ncol = 5, byrow = TRUE)
     )
   } else {
-    print('Plane undefined!\n')
+    print("Plane undefined!\n")
   }
 }
