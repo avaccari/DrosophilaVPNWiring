@@ -19,7 +19,7 @@
 #   dorsal-ventral as specified by the user
 #
 #
-# Copyright (c) 2021 Andrea Vaccari
+# Copyright (c) 2022 Andrea Vaccari
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -91,9 +91,9 @@ source("R/aux_functions.R")
 
 ###############################################################################
 # Define items to analyze here
-pre_type <- "LC4"
-post_type1 <- "DNp02" # Red
-post_type2 <- "DNp11" # Blue
+pre_type <- "LC24"
+post_type1 <- "mALC2" # Red
+post_type2 <- "CL246" # Blue
 
 # Grab the correct plane
 # NOTE: the FIRST plane specified is also use as projection plane
@@ -474,18 +474,18 @@ proj1 <- ggplot() +
   #                  weight=n.post1),
   #              width=0.008 * width_box,
   #              notch=TRUE) +
-  geom_segment(aes(
-    x = 0.008 * (p1_x1_wm - seg_len),
-    xend = 0.008 * (p1_x1_wm + seg_len),
-    y = 0.008 * p1_x2_wm,
-    yend = 0.008 * p1_x2_wm
-  ), col = "black", size = 2) +
-  geom_segment(aes(
-    y = 0.008 * (p1_x2_wm - seg_len),
-    yend = 0.008 * (p1_x2_wm + seg_len),
-    x = 0.008 * p1_x1_wm,
-    xend = 0.008 * p1_x1_wm
-  ), col = "black", size = 2) +
+  # geom_segment(aes(
+  #   x = 0.008 * (p1_x1_wm - seg_len),
+  #   xend = 0.008 * (p1_x1_wm + seg_len),
+  #   y = 0.008 * p1_x2_wm,
+  #   yend = 0.008 * p1_x2_wm
+  # ), col = "black", size = 2) +
+  # geom_segment(aes(
+  #   y = 0.008 * (p1_x2_wm - seg_len),
+  #   yend = 0.008 * (p1_x2_wm + seg_len),
+  #   x = 0.008 * p1_x1_wm,
+  #   xend = 0.008 * p1_x1_wm
+  # ), col = "black", size = 2) +
   ggtitle(paste(pre_type, ">", post_type1, "(lobula projection)")) +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(
@@ -539,18 +539,18 @@ proj2 <- ggplot() +
   #                  weight=n.post2),
   #              width=0.008 * width_box,
   #              notch=TRUE) +
-  geom_segment(aes(
-    x = 0.008 * (p2_x1_wm - seg_len),
-    xend = 0.008 * (p2_x1_wm + seg_len),
-    y = 0.008 * p2_x2_wm,
-    yend = 0.008 * p2_x2_wm
-  ), col = "black", size = 2) +
-  geom_segment(aes(
-    y = 0.008 * (p2_x2_wm - seg_len),
-    yend = 0.008 * (p2_x2_wm + seg_len),
-    x = 0.008 * p2_x1_wm,
-    xend = 0.008 * p2_x1_wm
-  ), col = "black", size = 2) +
+  # geom_segment(aes(
+  #   x = 0.008 * (p2_x1_wm - seg_len),
+  #   xend = 0.008 * (p2_x1_wm + seg_len),
+  #   y = 0.008 * p2_x2_wm,
+  #   yend = 0.008 * p2_x2_wm
+  # ), col = "black", size = 2) +
+  # geom_segment(aes(
+  #   y = 0.008 * (p2_x2_wm - seg_len),
+  #   yend = 0.008 * (p2_x2_wm + seg_len),
+  #   x = 0.008 * p2_x1_wm,
+  #   xend = 0.008 * p2_x1_wm
+  # ), col = "black", size = 2) +
   ggtitle(paste(pre_type, ">", post_type2, "(lobula projection)")) +
   theme(plot.title = element_text(hjust = 0.5)) +
   theme(
