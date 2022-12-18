@@ -6,10 +6,10 @@
 # Based on spatial_cluster_plots.Rmd.
 #
 # Generates:
-# - One 3D plot for each of the VPN idenitfying the detected clusters in
+# - One 3D plot for each of the VPN identifying the detected clusters in
 #   different colors.
 #
-# Copyright (c) 2021 Andrea Vaccari
+# Copyright (c) 2022 Andrea Vaccari
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
