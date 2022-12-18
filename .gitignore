@@ -7,3 +7,6 @@
 .DS_store
 output
 data
+R/Additional scripts/gradients_correlation.R
+R/Additional scripts/lobula_ranking_md.R
+R/Additional scripts/original_gradient_viz.R
